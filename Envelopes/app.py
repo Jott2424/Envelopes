@@ -682,18 +682,9 @@ def modify_transaction(txn_id):
 
     return render_template('modifytransaction.html', txn=txn, types=types)
 
-import jwt
-import time
 from flask import render_template
-from flask_login import login_required
-
-@app.route('/analytics')
-@login_required
-def analytics():
-    # Your Superset embedded visualization URL
-    iframe_url = "http://192.168.1.3:20352/superset/explore/p/W2YglRg3vo9/?standalone=1&height=800"
-
-    return render_template("analytics.html", iframe_url=iframe_url)
+from datetime import date, timedelta
+from decimal import Decimal
 
 # DB init
 def init_db():

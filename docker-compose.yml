@@ -1,7 +1,7 @@
 version: "3.8"
 
 services:
-  d_envelopes01:
+  envelopes:
     build: ./Envelopes       # build context folder as a string
     command: flask run --host=0.0.0.0 --port=5000  # command as a string
     ports:

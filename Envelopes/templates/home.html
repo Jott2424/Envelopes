@@ -25,14 +25,6 @@
 
     {% if user.is_authenticated %}
         <div class="col-md-5">
-            <a href="{{ url_for('analytics') }}" class="text-decoration-none">
-                <div class="card card-hover shadow-sm text-center py-5">
-                    <h2 class="card-title">Analytics</h2>
-                    <p class="card-text">How your budget is looking</p>
-                </div>
-            </a>
-        </div>
-        <div class="col-md-5">
             <a href="{{ url_for('budget_home') }}" class="text-decoration-none">
                 <div class="card card-hover shadow-sm text-center py-5">
                     <h2 class="card-title">Budget</h2>
