@@ -1,0 +1,129 @@
+{% block content %}
+<h1 style="margin-bottom: 20px;">All Transactions</h1>
+
+<!-- Filter Form -->
+<form method="get" action="{{ url_for('viewtransactions') }}" style="margin-bottom: 20px; display: flex; flex-direction: column; gap: 15px; max-width: 400px;">
+    <div>
+        <label for="transaction_type" style="display: block; margin-bottom: 4px;">Filter by Type:</label>
+        <select name="transaction_type" id="transaction_type" style="width: 100%; padding: 6px; border-radius: 4px; border: 1px solid #ccc;">
+            <option value="">-- All --</option>
+            {% for ttype in all_types %}
+                <option value="{{ ttype }}" {% if ttype == transaction_type_filter %}selected{% endif %}>{{ ttype }}</option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <div>
+        <label for="year" style="display: block; margin-bottom: 4px;">Filter by Year:</label>
+        <select name="year" id="year" style="width: 100%; padding: 6px; border-radius: 4px; border: 1px solid #ccc;">
+            <option value="">-- All --</option>
+            {% for y in years %}
+                <option value="{{ y }}" {% if y == year_filter %}selected{% endif %}>{{ y }}</option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <div>
+        <label for="month" style="display: block; margin-bottom: 4px;">Filter by Month:</label>
+        <select name="month" id="month" style="width: 100%; padding: 6px; border-radius: 4px; border: 1px solid #ccc;">
+            <option value="">-- All --</option>
+            {% for m_num, m_name in months %}
+                <option value="{{ m_num }}" {% if m_num == month_filter %}selected{% endif %}>{{ m_name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <div>
+        <label for="search" style="display: block; margin-bottom: 4px;">Search Description:</label>
+        <input type="text" id="search" name="search" value="{{ search_filter }}" style="width: 100%; padding: 6px; border-radius: 4px; border: 1px solid #ccc;">
+    </div>
+
+    <div>
+        <label for="per_page" style="display: block; margin-bottom: 4px;">Items per page:</label>
+        <select name="per_page" id="per_page" style="width: 100%; padding: 6px; border-radius: 4px; border: 1px solid #ccc;">
+            {% for option in [1, 10, 25, 50, 100] %}
+                <option value="{{ option }}" {% if per_page == option %}selected{% endif %}>{{ option }}</option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <button type="submit" style="margin-top: 10px; padding: 8px 18px; background-color: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer;">
+        Apply
+    </button>
+</form>
+
+<!-- Transactions Table -->
+<table style="width: 100%; border-collapse: collapse;">
+    <thead>
+        <tr style="background-color: #f2f2f2;">
+            <th style="border: 1px solid #ddd; padding: 10px; text-align: left;">Date</th>
+            <th style="border: 1px solid #ddd; padding: 10px; text-align: left;">Type</th>
+            <th style="border: 1px solid #ddd; padding: 10px; text-align: left;">Description</th>
+            <th style="border: 1px solid #ddd; padding: 10px; text-align: right;">Amount ($)</th>
+            <th style="border: 1px solid #ddd; padding: 10px; text-align: center;">Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for txn in transactions %}
+        <tr>
+            <td style="border: 1px solid #ddd; padding: 8px;">{{ txn[1].strftime('%Y-%m-%d') }}</td>
+            <td style="border: 1px solid #ddd; padding: 8px;">{{ txn[2] }}</td>
+            <td style="border: 1px solid #ddd; padding: 8px;">{{ txn[3] }}</td>
+            <td style="border: 1px solid #ddd; padding: 8px; text-align: right;">{{ "%.2f"|format(txn[4]) }}</td>
+            <td style="border: 1px solid #ddd; padding: 8px; text-align: center;">
+                <a href="{{ url_for('modify_transaction', txn_id=txn[0]) }}" style="color: #007bff; text-decoration: none; font-weight: 600;">Edit</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<!-- Pagination -->
+<div style="margin-top: 20px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+    <p style="margin: 0; flex-grow: 1;">
+        Showing page {{ page }} of {{ total_pages }} ({{ total_items }} transactions)
+    </p>
+
+    {% if page > 1 %}
+    <form method="get" action="{{ url_for('viewtransactions') }}" style="margin: 0;">
+        <input type="hidden" name="transaction_type" value="{{ transaction_type_filter }}">
+        <input type="hidden" name="search" value="{{ search_filter }}">
+        <input type="hidden" name="year" value="{{ year_filter }}">
+        <input type="hidden" name="month" value="{{ month_filter }}">
+        <input type="hidden" name="per_page" value="{{ per_page }}">
+        <input type="hidden" name="page" value="{{ page - 1 }}">
+        <button type="submit" style="padding: 8px 18px; background-color: #6c757d; color: white; border: none; border-radius: 4px; cursor: pointer;">
+            ← Previous
+        </button>
+    </form>
+    {% endif %}
+
+    {% if page < total_pages %}
+    <form method="get" action="{{ url_for('viewtransactions') }}" style="margin: 0;">
+        <input type="hidden" name="transaction_type" value="{{ transaction_type_filter }}">
+        <input type="hidden" name="search" value="{{ search_filter }}">
+        <input type="hidden" name="year" value="{{ year_filter }}">
+        <input type="hidden" name="month" value="{{ month_filter }}">
+        <input type="hidden" name="per_page" value="{{ per_page }}">
+        <input type="hidden" name="page" value="{{ page + 1 }}">
+        <button type="submit" style="padding: 8px 18px; background-color: #6c757d; color: white; border: none; border-radius: 4px; cursor: pointer;">
+            Next →
+        </button>
+    </form>
+    {% endif %}
+</div>
+
+<!-- Back Buttons -->
+<div style="margin-top: 30px;">
+    <form action="{{ url_for('budget_home') }}" method="get" style="display:inline-block; margin-right: 10px;">
+        <button type="submit" style="padding: 8px 15px; background-color: #6c757d; color: white; border: none; border-radius: 4px; cursor: pointer;">
+            ← Back to Budget
+        </button>
+    </form>
+    <form action="{{ url_for('home') }}" method="get" style="display:inline-block; margin-right: 10px;">
+        <button type="submit" style="padding: 8px 15px; background-color: #6c757d; color: white; border: none; border-radius: 4px; cursor: pointer;">
+            ← Back to Home
+        </button>
+    </form>
+</div>
+{% endblock %}

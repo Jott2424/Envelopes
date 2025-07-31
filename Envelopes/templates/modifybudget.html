@@ -1,0 +1,165 @@
+{% block content %}
+<style>
+    .container {
+        max-width: 600px;
+        margin: 3rem auto;
+        padding: 2rem;
+        background: #fff;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+    }
+
+    h2 {
+        margin-bottom: 1rem;
+        font-weight: 600;
+        border-bottom: 2px solid #007bff;
+        padding-bottom: 0.3rem;
+    }
+
+    form {
+        margin-bottom: 2rem;
+    }
+
+    label {
+        display: block;
+        margin-bottom: 0.4rem;
+        font-weight: 500;
+    }
+
+    input[type="text"],
+    input[type="number"],
+    input[type="date"],
+    select {
+        width: 100%;
+        padding: 0.6rem;
+        margin-bottom: 1rem;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+        font-size: 1rem;
+    }
+
+    button {
+        width: 100%;
+        padding: 0.75rem;
+        background-color: #007bff;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: background-color 0.2s ease-in-out;
+    }
+
+    button:hover {
+        background-color: #0056b3;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 1rem;
+    }
+
+    th, td {
+        border: 1px solid #ddd;
+        padding: 0.75rem 1rem;
+        text-align: left;
+    }
+
+    th {
+        background-color: #f0f8ff;
+        font-weight: 600;
+    }
+
+    .back-link {
+        margin-top: 2rem;
+        text-align: center;
+    }
+
+    .back-link a {
+        color: #555;
+        text-decoration: none;
+        font-weight: 500;
+        border: 1.5px solid #555;
+        padding: 0.4rem 1rem;
+        border-radius: 6px;
+        transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
+    }
+
+    .back-link a:hover {
+        background-color: #555;
+        color: white;
+        text-decoration: none;
+    }
+</style>
+
+<div class="container">
+    <!-- Create Category -->
+    <h2>Add Transaction Type</h2>
+    <form method="POST" action="{{ url_for('addtransactiontype') }}">
+        <label for="type_name">Type Name</label>
+        <input type="text" id="type_name" name="type_name" required>
+        <button type="submit">Add Type</button>
+    </form>
+
+    <!-- Modify Budget -->
+    <h2>Modify Weekly Budget</h2>
+    <form method="POST" action="{{ url_for('modifybudget') }}">
+        <label for="category_id">Category</label>
+        <select id="category_id" name="category_id" required>
+            {% for id, name in types %}
+            <option value="{{ id }}">{{ name }}</option>
+            {% endfor %}
+        </select>
+
+        <label for="amount">Budget Amount ($)</label>
+        <input type="number" id="amount" name="amount" step="0.01" required>
+
+        <label for="week_start">Week Starting (Sunday)</label>
+        <input type="date" id="week_start" name="week_start" required>
+
+        <button type="submit">Set Budget</button>
+    </form>
+
+    <!-- ALL Weekly Budgets with Edit -->
+    <h2 style="margin-top: 3rem;">All Weekly Budgets</h2>
+    {% if all_budgets %}
+    <table>
+        <thead>
+            <tr>
+                <th>Category</th>
+                <th>Amount ($)</th>
+                <th>Week Start</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for budget in all_budgets %}
+            <tr>
+                <td>{{ budget.name }}</td>
+                <td>${{ "%.2f"|format(budget.amount) }}</td>
+                <td>{{ budget.week_start.strftime('%Y-%m-%d') }}</td>
+                <td>
+                    <a href="{{ url_for('editbudget', budget_id=budget.id) }}" style="padding: 6px 12px; background-color: #ffc107; color: black; border-radius: 4px; text-decoration: none;">
+                        Edit
+                    </a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p>No weekly budgets found.</p>
+    {% endif %}
+
+    <!-- Navigation Buttons -->
+    <div style="margin-top: 30px;">
+        <form action="{{ url_for('budget_home') }}" method="get" style="display:inline-block; margin-right: 10px;">
+            <button type="submit">← Back to Budget</button>
+        </form>
+        <form action="{{ url_for('home') }}" method="get" style="display:inline-block; margin-right: 10px;">
+            <button type="submit">← Back to Home</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

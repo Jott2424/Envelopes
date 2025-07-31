@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}My Budget App{% endblock %}</title>
+</head>
+<body>
+    <header>
+        <h1>My Budget App</h1>
+        <nav>
+            <a href="{{ url_for('home') }}">Home</a> |
+            <a href="{{ url_for('viewbudget') }}">View Budget</a>
+        </nav>
+        <hr>
+    </header>
+
+    {% block content %}{% endblock %}
+
+    <footer>
+        <hr>
+        <p>&copy; {{ current_year or 2025 }}</p>
+    </footer>
+</body>
+</html>

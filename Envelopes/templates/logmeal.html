@@ -1,0 +1,99 @@
+{% block content %}
+<style>
+    .log-meal-container {
+        max-width: 500px;
+        margin: 3rem auto;
+        padding: 2rem;
+        background-color: #fff;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+    }
+
+    .log-meal-title {
+        text-align: center;
+        font-size: 1.8rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .form-label {
+        font-weight: 500;
+        margin-bottom: 0.5rem;
+        display: block;
+    }
+
+    input[type="date"],
+    select,
+    textarea,
+    input[type="number"] {
+        width: 100%;
+        padding: 0.6rem;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+        font-size: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    button[type="submit"] {
+        width: 100%;
+        padding: 0.75rem;
+        background-color: #007bff;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        font-size: 1rem;
+        transition: background-color 0.2s ease-in-out;
+    }
+
+    button[type="submit"]:hover {
+        background-color: #0056b3;
+    }
+
+    .back-links {
+        display: flex;
+        justify-content: center; /* center horizontally */
+        gap: 1.5rem;
+        margin-top: 1.5rem;
+    }
+
+    .back-links a {
+        color: #555;
+        font-size: 0.95rem;
+        text-decoration: none;
+    }
+
+    .back-links a:hover {
+        text-decoration: underline;
+    }
+</style>
+
+<div class="log-meal-container">
+    <div class="log-meal-title">🍽️ Log a Meal</div>
+
+    <form method="POST">
+        <label for="meal_date" class="form-label">Date</label>
+        <input type="date" id="meal_date" name="meal_date" required>
+
+        <label for="meal_type" class="form-label">Meal Type</label>
+        <select id="meal_type" name="meal_type" required>
+            <option value="breakfast">Breakfast</option>
+            <option value="lunch">Lunch</option>
+            <option value="dinner">Dinner</option>
+            <option value="snack">Snack</option>
+            <option value="other">Other</option>
+        </select>
+
+        <label for="description" class="form-label">Description</label>
+        <textarea id="description" name="description" rows="3"></textarea>
+
+        <label for="calories" class="form-label">Calories</label>
+        <input type="number" id="calories" name="calories" min="0" required>
+
+        <button type="submit">Log Meal</button>
+    </form>
+
+    <div class="back-links">
+        <a href="{{ url_for('meals_home') }}">← Back to Meals</a>
+        <a href="{{ url_for('home') }}">🏠 Home</a>
+    </div>
+</div>
+{% endblock %}

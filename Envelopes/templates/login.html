@@ -1,0 +1,24 @@
+{% block content %}
+<h1 style="margin-bottom: 20px;">Login</h1>
+
+<form method="POST" style="max-width: 400px; display: flex; flex-direction: column; gap: 15px;">
+    <div>
+        <input name="username" placeholder="Username" required
+               style="width: 100%; padding: 10px; border-radius: 4px; border: 1px solid #ccc;">
+    </div>
+    <div>
+        <input name="password" type="password" placeholder="Password" required
+               style="width: 100%; padding: 10px; border-radius: 4px; border: 1px solid #ccc;">
+    </div>
+    <button type="submit"
+            style="padding: 10px 18px; background-color: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer;">
+        Login
+    </button>
+</form>
+
+<p style="margin-top: 20px;">
+    <a href="{{ url_for('register') }}" style="color: #007bff; text-decoration: none;">
+        Need an account?
+    </a>
+</p>
+{% endblock %}

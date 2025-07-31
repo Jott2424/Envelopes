@@ -1,0 +1,66 @@
+{% block content %}
+<style>
+    .meals-page {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 3rem 1rem;
+        max-width: 500px;
+        margin: 0 auto;
+    }
+
+    .meals-header {
+        font-size: 2rem;
+        margin-bottom: 1rem;
+        text-align: center;
+    }
+
+    .meals-description {
+        font-size: 1rem;
+        color: #555;
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+
+    .action-button {
+        display: inline-block;
+        padding: 0.75rem 1.5rem;
+        font-size: 1.1rem;
+        background-color: #007bff;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        text-decoration: none;
+        transition: background-color 0.2s ease-in-out;
+    }
+
+    .action-button:hover {
+        background-color: #0056b3;
+    }
+
+    .back-link {
+        margin-top: 2rem;
+        color: #666;
+        font-size: 0.9rem;
+        text-decoration: none;
+    }
+
+    .back-link:hover {
+        text-decoration: underline;
+    }
+</style>
+
+<div class="meals-page">
+    <div class="meals-header">🍴 Meals</div>
+    <div class="meals-description">
+        Log and track your meals to stay on top of your day.
+    </div>
+
+    <a href="{{ url_for('logmeal') }}" class="action-button">
+        Log a Meal
+    </a>
+
+    <a href="{{ url_for('home') }}" class="back-link">← Back to Home</a>
+</div>
+{% endblock %}

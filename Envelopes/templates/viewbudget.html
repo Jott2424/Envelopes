@@ -1,0 +1,207 @@
+{% block content %}
+<style>
+  .budget-form {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    margin-bottom: 2rem;
+  }
+  .budget-form label {
+    font-weight: 600;
+  }
+  .budget-form select,
+  .budget-form input[type=number] {
+    padding: 0.4rem 0.6rem;
+    font-size: 1rem;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+  }
+  .budget-form button {
+    padding: 0.5rem 1.2rem;
+    background-color: #007bff;
+    border: none;
+    color: white;
+    font-weight: 600;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+  }
+  .budget-form button:hover {
+    background-color: #0056b3;
+  }
+
+  .week-card {
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 1.2rem 1.5rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 2px 6px rgb(0 0 0 / 0.05);
+    background: #fafafa;
+  }
+
+  .week-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-weight: 700;
+    font-size: 1.1rem;
+    margin-bottom: 1rem;
+  }
+
+  .details-btn {
+    background-color: #28a745;
+    color: white;
+    padding: 0.3rem 0.8rem;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    text-decoration: none;
+    font-weight: 600;
+    transition: background-color 0.2s ease;
+  }
+  .details-btn:hover {
+    background-color: #1e7e34;
+  }
+
+  table.budget-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0 8px;
+  }
+  table.budget-table th,
+  table.budget-table td {
+    padding: 0.6rem 1rem;
+    text-align: center;
+    font-size: 0.95rem;
+  }
+  table.budget-table th {
+    font-weight: 600;
+    background-color: #e9ecef;
+    border-bottom: 2px solid #ccc;
+  }
+  table.budget-table td:first-child {
+    text-align: left;
+    font-weight: 600;
+    background-color: white;
+  }
+  table.budget-table tbody tr {
+    background-color: white;
+    border-radius: 6px;
+  }
+  table.budget-table tbody tr:not(:last-child) {
+    margin-bottom: 6px;
+  }
+
+  .remaining-positive {
+    color: green;
+    font-weight: 700;
+  }
+  .remaining-negative {
+    color: #dc3545;
+    font-weight: 700;
+  }
+
+  .back-link {
+    display: inline-block;
+    margin-top: 1.5rem;
+    color: #007bff;
+    font-weight: 600;
+    text-decoration: none;
+    transition: color 0.2s ease;
+  }
+  .back-link:hover {
+    color: #0056b3;
+    text-decoration: underline;
+  }
+</style>
+
+<div class="container my-5">
+  <h2 class="mb-4">View Weekly Budget</h2>
+
+  <form method="POST" class="budget-form">
+    <div>
+      <label for="month">Month:</label><br>
+      <select name="month" id="month">
+        {% for m in range(1, 13) %}
+        <option value="{{ m }}" {% if m == selected_month %}selected{% endif %}>{{ m }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div>
+      <label for="year">Year:</label><br>
+      <input type="number" name="year" id="year" value="{{ selected_year }}" min="2000" max="2100" />
+    </div>
+
+    <div>
+      <button type="submit">View</button>
+    </div>
+  </form>
+
+  {% for week in weeks %}
+  <div class="week-card">
+    <div class="week-header">
+      <span>
+        Week: {{ week.start.strftime('%b %d') }} – {{ week.end.strftime('%b %d') }}
+      </span>
+      <a href="{{ url_for('viewbudget_week', start=week.start, end=week.end) }}" class="details-btn">
+        Details
+      </a>
+    </div>
+
+      <table class="budget-table" role="grid" aria-label="Weekly budget summary">
+      <thead>
+        <tr>
+          <th scope="col"></th>
+          {% for type in week.summary.keys() %}
+          <th scope="col">{{ type }}</th>
+          {% endfor %}
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Budget</td>
+          {% for data in week.summary.values() %}
+          <td>${{ "%.2f"|format(data.budget) }}</td>
+          {% endfor %}
+        </tr>
+        <tr>
+          <td>Envelope</td>
+          {% for data in week.summary.values() %}
+          <td>${{ "%.2f"|format(data.envelope) }}</td>
+          {% endfor %}
+        </tr>
+        <tr>
+          <td>Spent</td>
+          {% for data in week.summary.values() %}
+          <td>${{ "%.2f"|format(data.spent) }}</td>
+          {% endfor %}
+        </tr>
+        <tr>
+          <td>Remaining</td>
+          {% for data in week.summary.values() %}
+          <td class="{{ 'remaining-negative' if data.remaining < 0 else 'remaining-positive' }}">
+            ${{ "%.2f"|format(data.remaining) }}
+          </td>
+          {% endfor %}
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  {% endfor %}
+
+<div style="margin-top: 30px;">
+    <form action="{{ url_for('budget_home') }}" method="get" style="display:inline-block; margin-right: 10px;">
+        <button type="submit" style="padding: 8px 15px; background-color: #6c757d; color: white; border: none; border-radius: 4px; cursor: pointer;">
+            ← Back to Budget
+        </button>
+    </form>
+    <form action="{{ url_for('home') }}" method="get" style="display:inline-block; margin-right: 10px;">
+        <button type="submit" style="padding: 8px 15px; background-color: #6c757d; color: white; border: none; border-radius: 4px; cursor: pointer;">
+            ← Back to Home
+        </button>
+    </form>
+</div>
+
+
+{% endblock %}
