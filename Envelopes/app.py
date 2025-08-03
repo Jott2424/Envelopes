@@ -725,10 +725,9 @@ def init_db():
     cur.close()
     conn.close()
 
-if __name__ == '__main__':
-    init_db()
-    print("Starting app")
-    app.run(debug=True)
+# if __name__ == '__main__':
+#     init_db()
+#     print("Starting app")
 
 if __name__ == '__main__':
     if len(sys.argv) > 1 and sys.argv[1] == 'init-db':
