@@ -385,6 +385,7 @@ from datetime import datetime, date, timedelta
 from decimal import Decimal
 from flask import render_template, request
 from flask_login import login_required
+from collections import defaultdict
 
 @app.route('/viewbudget', methods=['GET', 'POST'])
 @login_required
@@ -399,85 +400,85 @@ def viewbudget():
     conn = get_db_connection()
     cur = conn.cursor()
 
-    first_day = date(selected_year, selected_month, 1)
-    last_day = date(selected_year, selected_month, monthrange(selected_year, selected_month)[1])
-    # Align start to Sunday on or before first_day
-    start = first_day - timedelta(days=first_day.weekday() + 1 if first_day.weekday() != 6 else 0)
-
-    weeks = []
-    all_categories = set()
-
     # Load all weekly budgets
-    cur.execute('SELECT tt.name, wb.amount, wb.week_start FROM category_budgets wb JOIN transaction_types tt ON wb.transaction_type_id = tt.id')
+    cur.execute('''
+        SELECT tt.name, wb.amount, wb.week_start 
+        FROM category_budgets wb 
+        JOIN transaction_types tt ON wb.transaction_type_id = tt.id
+    ''')
     budget_data = cur.fetchall()
     budget_by_week = {}
+    all_categories = set()
     for name, amount, week_start in budget_data:
         budget_by_week.setdefault(week_start, {})[name] = amount
         all_categories.add(name)
 
     # Load all transactions
-    cur.execute('SELECT tt.name, t.total, t.transaction_date FROM transactions t JOIN transaction_types tt ON t.transaction_type = tt.name')
+    cur.execute('''
+        SELECT tt.name, t.total, t.transaction_date 
+        FROM transactions t 
+        JOIN transaction_types tt ON t.transaction_type = tt.name
+    ''')
     transaction_data = cur.fetchall()
     transactions_by_type_and_week = {}
     for name, total, tdate in transaction_data:
-        # Align date to week start (Sunday)
+        # Align transaction to Sunday start of the week
         week_start = tdate - timedelta(days=tdate.weekday() + 1 if tdate.weekday() != 6 else 0)
         transactions_by_type_and_week.setdefault(week_start, {}).setdefault(name, Decimal('0.00'))
         transactions_by_type_and_week[week_start][name] += total
         all_categories.add(name)
 
-    # Calculate prior_remaining before the first week shown (all budgets and spend before start)
-    prior_remaining = {}
-    for cat in all_categories:
-        total_budget_before = sum(
-            weekly.get(cat, Decimal('0.00'))
-            for week_start, weekly in budget_by_week.items()
-            if week_start < start
-        )
-        total_spent_before = sum(
-            weekly.get(cat, Decimal('0.00'))
-            for week_start, weekly in transactions_by_type_and_week.items()
-            if week_start < start
-        )
-        prior_remaining[cat] = total_budget_before - total_spent_before
+    # Collect and sort all unique week_start dates
+    all_week_starts = set(budget_by_week.keys()) | set(transactions_by_type_and_week.keys())
+    all_week_starts = sorted(all_week_starts)
 
-    # Iterate weeks in the selected month with rolling carryover
-    while start <= last_day:
-        end = start + timedelta(days=6)
+    # Track cumulative totals per category
+    cumulative_budget = defaultdict(Decimal)
+    cumulative_spent = defaultdict(Decimal)
+
+    weeks = []
+
+    for week_start in all_week_starts:
+        end = week_start + timedelta(days=6)
+
+        # Count how many days fall into the selected month/year
         days_in_selected_month = sum(
-            1 for i in range(7) if (start + timedelta(days=i)).month == selected_month
+            1 for i in range(7)
+            if (week_start + timedelta(days=i)).month == selected_month and
+               (week_start + timedelta(days=i)).year == selected_year
         )
 
+        # Always update cumulative budgets and spending
+        summary = {}
+        this_week_budgets = budget_by_week.get(week_start, {})
+        this_week_spent = transactions_by_type_and_week.get(week_start, {})
+
+        for cat in sorted(all_categories):
+            weekly_budget = this_week_budgets.get(cat, Decimal('0.00'))
+            spent = this_week_spent.get(cat, Decimal('0.00'))
+
+            cumulative_budget[cat] += weekly_budget
+
+            # envelope = cumulative budgets up to this week minus cumulative spent BEFORE this week
+            envelope = cumulative_budget[cat] - cumulative_spent[cat]
+            remaining = envelope - spent
+
+            cumulative_spent[cat] += spent
+
+            summary[cat] = {
+                'budget': weekly_budget,
+                'spent': spent,
+                'envelope': envelope,
+                'remaining': remaining
+            }
+
+        # Only display weeks with at least 4 days in the selected month/year
         if days_in_selected_month >= 4:
-            summary = {}
-
-            this_week_budgets = budget_by_week.get(start, {})
-            this_week_spent = transactions_by_type_and_week.get(start, {})
-
-            for cat in sorted(all_categories):
-                prior = prior_remaining.get(cat, Decimal('0.00'))
-                weekly_budget = this_week_budgets.get(cat, Decimal('0.00'))
-                spent = this_week_spent.get(cat, Decimal('0.00'))
-
-                total_budget = prior + weekly_budget  # rolling budget (carryover + this week)
-                remaining = total_budget - spent
-
-                summary[cat] = {
-                    'envelope': total_budget,    # renamed from 'budget' — the rolling envelope amount
-                    'budget': weekly_budget,     # new field — this week's budget allocation only
-                    'spent': spent,
-                    'remaining': remaining
-                }
-
-                prior_remaining[cat] = remaining  # update for next week
-
             weeks.append({
-                'start': start,
+                'start': week_start,
                 'end': end,
                 'summary': summary
             })
-
-        start += timedelta(days=7)
 
     cur.close()
     conn.close()
@@ -486,7 +487,6 @@ def viewbudget():
                            weeks=weeks,
                            selected_month=selected_month,
                            selected_year=selected_year)
-
 
 
 @app.route('/viewbudget/week')
