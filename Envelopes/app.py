@@ -27,6 +27,9 @@ DB_USER = os.environ.get('DB_USER', 'envelopes')
 DB_PASS = os.environ.get('DB_PASS', 'envelopes')
 DB_HOST = os.environ.get('DB_HOST', '127.0.0.1')
 DB_PORT = os.environ.get('DB_PORT', '5432')
+# GRAFANA_URL = os.environ.get('GRAFANA_URL','')
+GRAFANA_URL = os.environ.get('GRAFANA_URL','http://192.168.1.3:20350/public-dashboards/4c9eb63a253846d9929241d3a71967ce')
+print(f"Grafana URL: {GRAFANA_URL}")  # This will print the Grafana URL on app start
 
 def get_db_connection():
     return psycopg2.connect(
@@ -85,6 +88,13 @@ def home():
 @login_required
 def budget_home():
     return render_template('budget_home.html')
+
+@app.route('/analytics')
+@login_required
+def analytics_home():
+    grafana_url = os.getenv("GRAFANA_URL")  # reads from environment
+    print(GRAFANA_URL)
+    return render_template('analytics.html', grafana_url=GRAFANA_URL)
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -546,12 +556,12 @@ def viewtransactions():
     offset = (page - 1) * per_page
 
     # Base query and params
-    query = "SELECT id, transaction_date, transaction_type, description, total FROM transactions"
+    query = "SELECT id, transaction_date, transaction_type, description, total FROM transactions where 1=1"
     params = []
 
     # Filters
     if transaction_type_filter:
-        query += " AND type = %s"
+        query += " AND transaction_type = %s"
         params.append(transaction_type_filter)
 
     if search_filter:
