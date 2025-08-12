@@ -415,6 +415,10 @@ def viewbudget():
         SELECT tt.name, wb.amount, wb.week_start 
         FROM category_budgets wb 
         JOIN transaction_types tt ON wb.transaction_type_id = tt.id
+        UNION ALL
+        SELECT 'Total' as name, sum(wb.amount), wb.week_start
+        FROM category_budgets wb 
+        GROUP BY name, wb.week_start
     ''')
     budget_data = cur.fetchall()
     budget_by_week = {}
@@ -428,6 +432,10 @@ def viewbudget():
         SELECT tt.name, t.total, t.transaction_date 
         FROM transactions t 
         JOIN transaction_types tt ON t.transaction_type = tt.name
+        UNION ALL
+        SELECT 'Total' as name, sum(t.total), t.transaction_date
+        FROM transactions t
+        GROUP BY name, t.transaction_date
     ''')
     transaction_data = cur.fetchall()
     transactions_by_type_and_week = {}
@@ -463,7 +471,7 @@ def viewbudget():
         this_week_budgets = budget_by_week.get(week_start, {})
         this_week_spent = transactions_by_type_and_week.get(week_start, {})
 
-        for cat in sorted(all_categories):
+        for cat in sorted(all_categories, key=lambda x: (0 if x == 'Total' else 2 if x == 'Unplanned' else 1, x)):
             weekly_budget = this_week_budgets.get(cat, Decimal('0.00'))
             spent = this_week_spent.get(cat, Decimal('0.00'))
 
