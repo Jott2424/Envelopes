@@ -1,0 +1,165 @@
+{% block content %}
+<style>
+  .selection-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    max-width: 900px;
+    margin: 2rem auto;
+  }
+
+  .checkbox-row {
+    display: flex;
+    gap: 2rem;
+    flex-wrap: wrap;
+  }
+
+  .selection-form fieldset {
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    padding: 1rem;
+    flex: 1 1 300px;
+  }
+  .selection-form legend {
+    font-weight: 700;
+  }
+  .selection-form label {
+    display: block;
+    margin-bottom: 0.4rem;
+    font-weight: 500;
+  }
+  .selection-form input[type="checkbox"] {
+    margin-right: 0.5rem;
+  }
+  .selection-form select,
+  .selection-form input[type=number] {
+    padding: 0.4rem 0.6rem;
+    font-size: 1rem;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+  }
+  .selection-form button {
+    padding: 0.5rem 1rem;
+    background-color: #007bff;
+    border: none;
+    color: white;
+    font-weight: 600;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-top: 1rem;
+    transition: background-color 0.2s ease;
+  }
+  .selection-form button:hover {
+    background-color: #0056b3;
+  }
+  .checkbox-buttons button {
+    background-color: #6c757d;
+    margin-right: 0.5rem;
+    font-weight: 500;
+  }
+  .checkbox-buttons button:hover {
+    background-color: #5a6268;
+  }
+</style>
+
+<div class="container">
+  <h2>Select Categories and Weeks</h2>
+  <form method="POST" class="selection-form">
+    <input type="hidden" name="action" id="form-action" value="view">
+
+    <!-- Month & Year -->
+    <div>
+      <label for="month">Month:</label>
+      <select name="month" id="month"
+        onchange="document.getElementById('form-action').value='month-change'; this.form.submit()">
+        {% for m in range(1, 13) %}
+          <option value="{{ m }}" {% if m == selected_month %}selected{% endif %}>{{ m }}</option>
+        {% endfor %}
+      </select>
+
+      <label for="year">Year:</label>
+      <input type="number" name="year" id="year" value="{{ selected_year }}" min="2000" max="2100"
+        onchange="document.getElementById('form-action').value='month-change'; this.form.submit()">
+    </div>
+
+    <!-- Row for Categories and Weeks -->
+    <div class="checkbox-row">
+
+      <!-- Categories -->
+      <fieldset>
+        <legend>Categories</legend>
+        <div class="checkbox-buttons">
+          <button type="button" id="select-all-categories">All</button>
+          <button type="button" id="deselect-all-categories">None</button>
+        </div>
+        <div>
+          {% for cat in categories %}
+            <label>
+              <input type="checkbox" name="categories" value="{{ cat }}"
+                {% if cat in selected_categories %}checked{% endif %}>
+              {{ cat }}
+            </label>
+          {% endfor %}
+        </div>
+      </fieldset>
+
+      <!-- Weeks -->
+      <fieldset>
+        <legend>Weeks</legend>
+        <div class="checkbox-buttons">
+          <button type="button" id="select-all-weeks">All</button>
+          <button type="button" id="deselect-all-weeks">None</button>
+        </div>
+        <div>
+          {% for week in weeks_in_month %}
+            {% set start_str = week.start.strftime('%Y-%m-%d') %}
+            <label>
+              <input type="checkbox" name="weeks" value="{{ start_str }}"
+                {% if start_str in selected_weeks %}checked{% endif %}>
+              {{ week.start.strftime('%b %d') }} - {{ week.end.strftime('%b %d') }}
+            </label><br>
+          {% endfor %}
+        </div>
+      </fieldset>
+
+    </div>
+
+    <button type="submit">View Budget</button>
+  </form>
+</div>
+
+<script>
+  // Categories All/None
+  document.getElementById('select-all-categories').addEventListener('click', () => {
+    document.querySelectorAll('input[name="categories"]').forEach(cb => cb.checked = true);
+  });
+  document.getElementById('deselect-all-categories').addEventListener('click', () => {
+    document.querySelectorAll('input[name="categories"]').forEach(cb => cb.checked = false);
+  });
+
+  // Weeks All/None
+  document.getElementById('select-all-weeks').addEventListener('click', () => {
+    document.querySelectorAll('input[name="weeks"]').forEach(cb => cb.checked = true);
+  });
+  document.getElementById('deselect-all-weeks').addEventListener('click', () => {
+    document.querySelectorAll('input[name="weeks"]').forEach(cb => cb.checked = false);
+  });
+
+  // Form validation
+  document.querySelector('.selection-form').addEventListener('submit', function(e) {
+    const checkedCategories = document.querySelectorAll('input[name="categories"]:checked');
+    const checkedWeeks = document.querySelectorAll('input[name="weeks"]:checked');
+
+    if (checkedCategories.length === 0) {
+      alert("Please select at least one category.");
+      e.preventDefault();
+      return;
+    }
+    if (checkedWeeks.length === 0) {
+      alert("Please select at least one week.");
+      e.preventDefault();
+      return;
+    }
+  });
+</script>
+{% endblock %}

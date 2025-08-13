@@ -7,16 +7,6 @@
     align-items: flex-end;
     margin-bottom: 2rem;
   }
-  .budget-form label {
-    font-weight: 600;
-  }
-  .budget-form select,
-  .budget-form input[type=number] {
-    padding: 0.4rem 0.6rem;
-    font-size: 1rem;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-  }
   .budget-form button {
     padding: 0.5rem 1.2rem;
     background-color: #007bff;
@@ -118,24 +108,9 @@
 <div class="container my-5">
   <h2 class="mb-4">View Weekly Budget</h2>
 
-  <form method="POST" class="budget-form">
-    <div>
-      <label for="month">Month:</label><br>
-      <select name="month" id="month">
-        {% for m in range(1, 13) %}
-        <option value="{{ m }}" {% if m == selected_month %}selected{% endif %}>{{ m }}</option>
-        {% endfor %}
-      </select>
-    </div>
-
-    <div>
-      <label for="year">Year:</label><br>
-      <input type="number" name="year" id="year" value="{{ selected_year }}" min="2000" max="2100" />
-    </div>
-
-    <div>
-      <button type="submit">View</button>
-    </div>
+  <!-- Change Selection Button -->
+  <form action="{{ url_for('viewbudget') }}" method="get" class="budget-form">
+    <button type="submit">Change Categories / Weeks</button>
   </form>
 
   {% for week in weeks %}
@@ -149,7 +124,7 @@
       </a>
     </div>
 
-      <table class="budget-table" role="grid" aria-label="Weekly budget summary">
+    <table class="budget-table" role="grid" aria-label="Weekly budget summary">
       <thead>
         <tr>
           <th scope="col"></th>
@@ -202,6 +177,5 @@
         </button>
     </form>
 </div>
-
 
 {% endblock %}

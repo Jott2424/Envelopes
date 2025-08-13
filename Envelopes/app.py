@@ -27,9 +27,6 @@ DB_USER = os.environ.get('DB_USER', 'envelopes')
 DB_PASS = os.environ.get('DB_PASS', 'envelopes')
 DB_HOST = os.environ.get('DB_HOST', '127.0.0.1')
 DB_PORT = os.environ.get('DB_PORT', '5432')
-# GRAFANA_URL = os.environ.get('GRAFANA_URL','')
-GRAFANA_URL = os.environ.get('GRAFANA_URL','http://192.168.1.3:20350/public-dashboards/4c9eb63a253846d9929241d3a71967ce')
-print(f"Grafana URL: {GRAFANA_URL}")  # This will print the Grafana URL on app start
 
 def get_db_connection():
     return psycopg2.connect(
@@ -88,13 +85,6 @@ def home():
 @login_required
 def budget_home():
     return render_template('budget_home.html')
-
-@app.route('/analytics')
-@login_required
-def analytics_home():
-    grafana_url = os.getenv("GRAFANA_URL")  # reads from environment
-    print(GRAFANA_URL)
-    return render_template('analytics.html', grafana_url=GRAFANA_URL)
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -400,101 +390,157 @@ from collections import defaultdict
 @app.route('/viewbudget', methods=['GET', 'POST'])
 @login_required
 def viewbudget():
+    from collections import defaultdict
+    from decimal import Decimal
+    from datetime import datetime, timedelta
+    from calendar import monthrange
+
     selected_month = datetime.now().month
     selected_year = datetime.now().year
-
-    if request.method == 'POST':
-        selected_month = int(request.form.get('month', selected_month))
-        selected_year = int(request.form.get('year', selected_year))
+    selected_categories = []
+    selected_weeks = []
 
     conn = get_db_connection()
     cur = conn.cursor()
 
-    # Load all weekly budgets
-    cur.execute('''
-        SELECT tt.name, wb.amount, wb.week_start 
-        FROM category_budgets wb 
-        JOIN transaction_types tt ON wb.transaction_type_id = tt.id
-        UNION all
-        SELECT 'Total' as name, sum(wb.amount), wb.week_start
+    # Get all categories from DB (exclude Total)
+    cur.execute("SELECT name FROM transaction_types ORDER BY name")
+    categories_list = [row[0] for row in cur.fetchall() if row[0] != 'Total']
+
+    action = request.form.get('action', 'view')
+
+    if request.method == 'POST':
+        selected_month = int(request.form.get('month', selected_month))
+        selected_year = int(request.form.get('year', selected_year))
+        selected_categories = request.form.getlist('categories')
+        selected_weeks = request.form.getlist('weeks')
+
+        # Always include Total in calculations
+        if 'Total' not in selected_categories:
+            selected_categories.append('Total')
+
+    # ---- Compute all weeks in month (≥4 days logic) ----
+    weeks_in_month = []
+    first_day = datetime(selected_year, selected_month, 1)
+    last_day = datetime(selected_year, selected_month, monthrange(selected_year, selected_month)[1])
+    current = first_day - timedelta(days=first_day.weekday() + 1 if first_day.weekday() != 6 else 0)
+    while current <= last_day:
+        days_in_month = sum(1 for i in range(7) if (current + timedelta(days=i)).month == selected_month)
+        if days_in_month >= 4:
+            week_end = current + timedelta(days=6)
+            weeks_in_month.append({'start': current, 'end': week_end})
+        current += timedelta(days=7)
+
+    # Determine current week based on today's date
+    today = datetime.today()
+    this_week_start = today - timedelta(days=today.weekday() + 1 if today.weekday() != 6 else 0)
+    this_week_str = this_week_start.strftime("%Y-%m-%d")
+
+    # Only default to today’s week if first load and NOT a month-change
+    if not selected_weeks and action != 'month-change':
+        selected_weeks = [this_week_str]
+
+    # If GET or no categories selected yet, show selection form
+    if not selected_categories or request.method == 'GET' or action == 'month-change':
+        cur.close()
+        conn.close()
+        return render_template(
+            'select_categories.html',
+            categories=categories_list,
+            selected_month=selected_month,
+            selected_year=selected_year,
+            selected_categories=selected_categories,
+            weeks_in_month=weeks_in_month,
+            selected_weeks=selected_weeks
+        )
+
+    # ---- Prepare SQL for selected categories (exclude Total) ----
+    categories_for_sql = [c for c in selected_categories if c != 'Total']
+    placeholders = ', '.join(['%s'] * len(categories_for_sql))
+
+    # ---- Budgets ----
+    query_categories = f"""
+        SELECT wb.week_start, tt.name AS category, wb.amount
         FROM category_budgets wb
-        join (select id, name as name_ from transaction_types where name != 'Unplanned' ) tt on wb.transaction_type_id = tt.id
-        GROUP BY name, wb.week_start
-        order by name, week_start
-    ''')
-    budget_data = cur.fetchall()
+        JOIN transaction_types tt ON wb.transaction_type_id = tt.id
+        WHERE tt.name IN ({placeholders})
+        ORDER BY wb.week_start, tt.name
+    """
+    cur.execute(query_categories, categories_for_sql)
+    category_results = cur.fetchall()
+
+    query_total = f"""
+        SELECT wb.week_start, 'Total' AS category, SUM(wb.amount) AS amount
+        FROM category_budgets wb
+        JOIN transaction_types tt ON wb.transaction_type_id = tt.id
+        WHERE tt.name IN ({placeholders})
+        GROUP BY wb.week_start
+    """
+    cur.execute(query_total, categories_for_sql)
+    total_results = cur.fetchall()
+
+    budget_data = total_results + category_results
     budget_by_week = {}
     all_categories = set()
-    for name, amount, week_start in budget_data:
+    for week_start, name, amount in budget_data:
         budget_by_week.setdefault(week_start, {})[name] = amount
         all_categories.add(name)
 
-    # Load all transactions
-    cur.execute('''
-        SELECT tt.name, t.total, t.transaction_date 
-        FROM transactions t 
-        JOIN transaction_types tt ON t.transaction_type = tt.name
-        UNION ALL
-        SELECT 'Total' as name, sum(t.total), t.transaction_date
+    # ---- Transactions ----
+    query_transactions = f"""
+        SELECT t.transaction_date, tt.name AS category, t.total
         FROM transactions t
-        where t.transaction_type != 'Unplanned'
-        GROUP BY name, t.transaction_date
-    ''')
+        JOIN transaction_types tt ON t.transaction_type = tt.name
+        WHERE tt.name IN ({placeholders})
+    """
+    cur.execute(query_transactions, categories_for_sql)
     transaction_data = cur.fetchall()
+
     transactions_by_type_and_week = {}
-    for name, total, tdate in transaction_data:
-        # Align transaction to Sunday start of the week
+    for tdate, name, total in transaction_data:
         week_start = tdate - timedelta(days=tdate.weekday() + 1 if tdate.weekday() != 6 else 0)
         transactions_by_type_and_week.setdefault(week_start, {}).setdefault(name, Decimal('0.00'))
         transactions_by_type_and_week[week_start][name] += total
         all_categories.add(name)
 
-    # Collect and sort all unique week_start dates
-    all_week_starts = set(budget_by_week.keys()) | set(transactions_by_type_and_week.keys())
-    all_week_starts = sorted(all_week_starts)
+    # Total for transactions
+    for week_start in transactions_by_type_and_week.keys():
+        total_sum = sum(transactions_by_type_and_week[week_start].get(cat, Decimal('0.00'))
+                        for cat in categories_for_sql)
+        transactions_by_type_and_week[week_start]['Total'] = total_sum
+        all_categories.add('Total')
 
-    # Track cumulative totals per category
+    # ---- Build display weeks ----
+    all_week_starts = sorted(set(budget_by_week.keys()) | set(transactions_by_type_and_week.keys()))
     cumulative_budget = defaultdict(Decimal)
     cumulative_spent = defaultdict(Decimal)
-
     weeks = []
 
     for week_start in all_week_starts:
         end = week_start + timedelta(days=6)
-
-        # Count how many days fall into the selected month/year
-        days_in_selected_month = sum(
-            1 for i in range(7)
-            if (week_start + timedelta(days=i)).month == selected_month and
-               (week_start + timedelta(days=i)).year == selected_year
-        )
-
-        # Always update cumulative budgets and spending
         summary = {}
         this_week_budgets = budget_by_week.get(week_start, {})
         this_week_spent = transactions_by_type_and_week.get(week_start, {})
 
         for cat in sorted(all_categories, key=lambda x: (0 if x == 'Total' else 2 if x == 'Unplanned' else 1, x)):
-            weekly_budget = this_week_budgets.get(cat, Decimal('0.00'))
-            spent = this_week_spent.get(cat, Decimal('0.00'))
+            if cat in selected_categories:
+                weekly_budget = this_week_budgets.get(cat, Decimal('0.00'))
+                spent = this_week_spent.get(cat, Decimal('0.00'))
 
-            cumulative_budget[cat] += weekly_budget
+                cumulative_budget[cat] += weekly_budget
+                envelope = cumulative_budget[cat] - cumulative_spent[cat]
+                remaining = envelope - spent
+                cumulative_spent[cat] += spent
 
-            # envelope = cumulative budgets up to this week minus cumulative spent BEFORE this week
-            envelope = cumulative_budget[cat] - cumulative_spent[cat]
-            remaining = envelope - spent
+                summary[cat] = {
+                    'budget': weekly_budget,
+                    'spent': spent,
+                    'envelope': envelope,
+                    'remaining': remaining
+                }
 
-            cumulative_spent[cat] += spent
-
-            summary[cat] = {
-                'budget': weekly_budget,
-                'spent': spent,
-                'envelope': envelope,
-                'remaining': remaining
-            }
-
-        # Only display weeks with at least 4 days in the selected month/year
-        if days_in_selected_month >= 4:
+        # Only show weeks the user selected
+        if week_start.strftime("%Y-%m-%d") in selected_weeks:
             weeks.append({
                 'start': week_start,
                 'end': end,
@@ -503,11 +549,12 @@ def viewbudget():
 
     cur.close()
     conn.close()
-
-    return render_template('viewbudget.html',
-                           weeks=weeks,
-                           selected_month=selected_month,
-                           selected_year=selected_year)
+    return render_template(
+        'viewbudget.html',
+        weeks=weeks,
+        selected_month=selected_month,
+        selected_year=selected_year
+    )
 
 
 @app.route('/viewbudget/week')
