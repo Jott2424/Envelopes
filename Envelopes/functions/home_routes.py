@@ -14,11 +14,11 @@ def home():
         FROM budgets
     """)
 
-    user_budgets = cur.fetchall()
+    budgets = cur.fetchall()
     cur.close()
     conn.close()
 
-    # if not user_budgets:
+    # if not budgets:
     #     # No budgets found, redirect or prompt
     #     return redirect(url_for('getting_started_home_route'))
 
