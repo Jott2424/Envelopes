@@ -65,6 +65,11 @@ def register_routes(app):
     @login_required
     def getting_started_home_route():
         return getting_started_routes.getting_started_home()
+    
+    @app.route('/getting_started_create_budget')
+    @login_required
+    def getting_started_create_budget_route():
+        return getting_started_routes.getting_started_create_budget_route()
 
     @app.route('/budget')
     @login_required

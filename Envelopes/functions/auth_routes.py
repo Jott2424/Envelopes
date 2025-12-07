@@ -29,22 +29,22 @@ def logout():
     return redirect(url_for('login'))
 
 def register():
-        if request.method == 'POST':
-            username = request.form.get('username')
-            password = request.form.get('password')
-            password_hash = generate_password_hash(password)
+    if request.method == 'POST':
+        username = request.form.get('username')
+        password = request.form.get('password')
+        password_hash = generate_password_hash(password)
 
-            conn = db_utils.get_db_connection()
-            cur = conn.cursor()
-            cur.execute("INSERT INTO users (name, password) VALUES (%s, %s) RETURNING pk_users_id",
-                        (username, password_hash))
-            user_id = cur.fetchone()[0]
-            conn.commit()
-            cur.close()
-            conn.close()
+        conn = db_utils.get_db_connection()
+        cur = conn.cursor()
+        cur.execute("INSERT INTO users (name, password) VALUES (%s, %s) RETURNING pk_users_id",
+                    (username, password_hash))
+        user_id = cur.fetchone()[0]
+        conn.commit()
+        cur.close()
+        conn.close()
 
-            user = User(user_id, username)
-            login_user(user)
-            return redirect(url_for('home_route'))
+        user = User(user_id, username)
+        login_user(user)
+        return redirect(url_for('home_route'))
 
-        return render_template('register.html')
+    return render_template('register.html')

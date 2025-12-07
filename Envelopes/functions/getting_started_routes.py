@@ -6,3 +6,6 @@ from flask_login import current_user
 
 def getting_started_home():
     return render_template('getting_started_home.html')
+
+def getting_started_create_budget_route():
+    return render_template('getting_started_create_budget.html')

@@ -4,7 +4,23 @@ from flask import render_template, request, redirect, url_for
 from flask_login import current_user
 
 def budget_home():
-    return render_template('budget_home.html')
+    conn = db_utils.get_db_connection()
+    cur = conn.cursor()
+
+    #check for default budget
+    cur.execute("""
+        SELECT pk_user_default_budget_id
+        FROM user_default_budget
+        WHERE fk_users_id = %s
+    """, (current_user.id,))
+    
+    existing = cur.fetchone()
+    print(existing)
+
+    if existing :
+        return render_template('budget_home.html')
+    else:
+        return render_template('budget_select.html')
 
 def budget_create():
     return render_template('budget_create.html')

@@ -18,8 +18,8 @@ def home():
     cur.close()
     conn.close()
 
-    # if not budgets:
-    #     # No budgets found, redirect or prompt
-    #     return redirect(url_for('getting_started_home_route'))
+    if not budgets:
+        # No budgets found, redirect or prompt
+        return redirect(url_for('getting_started_create_budget_route'))
 
     return render_template('home.html', user=current_user)
