@@ -66,7 +66,7 @@ def register_routes(app):
     def getting_started_home_route():
         return getting_started_routes.getting_started_home()
     
-    @app.route('/getting_started_create_budget')
+    @app.route('/getting_started_create_budget', methods=['GET','POST'])
     @login_required
     def getting_started_create_budget_route():
         return getting_started_routes.getting_started_create_budget_route()

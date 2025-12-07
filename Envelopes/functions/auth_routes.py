@@ -20,7 +20,7 @@ def login():
             if check_password_hash(db_password_hash, password):
                 user = User(user_id, db_username)
                 login_user(user)
-                return redirect(url_for('home'))
+                return redirect(url_for('home_route'))
         return "Invalid credentials", 401
     return render_template('login.html')
 
