@@ -17,7 +17,7 @@ def budget_home():
     existing = cur.fetchone()
     print(existing)
 
-    if existing :
+    if existing:
         return render_template('budget_home.html')
     else:
         return render_template('budget_select.html')
