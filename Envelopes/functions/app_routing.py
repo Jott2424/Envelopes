@@ -76,7 +76,7 @@ def register_routes(app):
     def budget_home_route():
         return budget_routes.budget_home()
     
-    @app.route('/budget_create')
+    @app.route('/budget_create', methods=['GET', 'POST'])
     @login_required
     def budget_create_route():
         return budget_routes.budget_create()

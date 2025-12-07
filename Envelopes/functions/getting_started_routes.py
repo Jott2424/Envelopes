@@ -14,7 +14,6 @@ def getting_started_create_budget_route():
     if request.method == 'POST':
 
         budget_name = request.form.get('budget_name')
-        print(budget_name)
 
         conn = db_utils.get_db_connection()
         cur = conn.cursor()

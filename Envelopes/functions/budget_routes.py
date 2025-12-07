@@ -23,6 +23,37 @@ def budget_home():
         return render_template('budget_select.html')
 
 def budget_create():
+    if request.method == 'POST':
+        budget_name = request.form.get('budget_name')
+
+        conn = db_utils.get_db_connection()
+        cur = conn.cursor()
+        #insert new budget to budgets
+        cur.execute("""
+                INSERT INTO budgets (name)
+                VALUES (%s)
+            """, (budget_name,))
+        #get the new budget id
+        cur.execute("""
+            SELECT pk_budgets_id
+            FROM budgets WHERE name = %s
+            """, (budget_name,))
+        pk = cur.fetchone()
+        #insert new budget to user default budgets
+        cur.execute("""
+                INSERT INTO user_default_budget (fk_budgets_id, fk_users_id)
+                VALUES (%s, %s)
+            """, (pk, current_user.id))
+        #insert new budget to budgets_users (table of who is allowed to access which budgets)
+        cur.execute("""
+                INSERT INTO budget_users (fk_budgets_id, fk_users_id)
+                VALUES (%s, %s)
+            """, (pk, current_user.id))
+        conn.commit()
+        cur.close()
+        conn.close()
+
+        return redirect(url_for('home_route'))
     return render_template('budget_create.html')
 
 def budget_select_default():
