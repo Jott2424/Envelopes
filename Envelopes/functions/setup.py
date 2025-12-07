@@ -36,6 +36,14 @@ def first_time_init_db():
             fk_users_id INTEGER REFERENCES users(pk_users_id)
         );
     ''')
+    #the default budget for each user on home
+    cur.execute('''
+        CREATE TABLE IF NOT EXISTS user_default_budget (
+            pk_user_default_budget_id SERIAL PRIMARY KEY,
+            fk_budgets_id INTEGER REFERENCES budgets(pk_budgets_id),
+            fk_users_id INTEGER REFERENCES users(pk_users_id)
+        );
+    ''')
     #table for storing settings for each user
     cur.execute('''
         CREATE TABLE IF NOT EXISTS user_settings (
