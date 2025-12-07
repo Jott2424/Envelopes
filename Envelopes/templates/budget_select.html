@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Budget Selection</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .budget-list { list-style-type: none; padding: 0; }
+        .budget-item { margin: 10px 0; display: flex; align-items: center; }
+        .budget-item label { margin-left: 8px; }
+    </style>
+</head>
+<body>
+    <h1>Budget Selection</h1>
+
+    {% if budgets %}
+        <form method="POST" action="{{ url_for('budget_select_route') }}">
+            <ul class="budget-list">
+                {% for budget in budgets %}
+                    <li class="budget-item">
+                        <input type="radio" name="selected_budget" value="{{ budget }}" required>
+                        <label>{{ budget }}</label>
+                    </li>
+                {% endfor %}
+            </ul>
+
+            <button type="submit">Continue</button>
+        </form>
+    {% else %}
+        <p>You don't have any budgets yet.
+            <a href="{{ url_for('budget_create_route') }}">Create one now</a>.
+        </p>
+    {% endif %}
+</body>
+</html>

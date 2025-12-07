@@ -1,7 +1,5 @@
-from flask import Flask, render_template, redirect, url_for, session
-
 # def get_all_transaction_types():
-#     conn = get_db_connection()
+#     conn = db_utils.get_db_connection()
 #     cur = conn.cursor()
 #     cur.execute("SELECT DISTINCT transaction_type FROM transactions ORDER BY transaction_type;")
 #     types = [row[0] for row in cur.fetchall()]
@@ -9,70 +7,86 @@ from flask import Flask, render_template, redirect, url_for, session
 #     return types
 
 # def get_all_years():
-#     conn = get_db_connection()
+#     conn = db_utils.get_db_connection()
 #     cur = conn.cursor()
 #     cur.execute("SELECT DISTINCT EXTRACT(YEAR FROM transaction_date) AS year FROM transactions ORDER BY year;")
 #     years = [int(row[0]) for row in cur.fetchall()]
 #     cur.close()
 #     return years
 
-# @login_manager.user_loader
-# def load_user(user_id):
-#     return User.get(user_id)
+
+# functions/app_routing.py
+import psycopg2
+from config import DB_HOST, DB_NAME, DB_USER, DB_PASS, DB_PORT
+from functions import auth_routes, db_utils, budget_routes, home_routes, getting_started_routes
+from classes.user import User
+
+from flask import render_template, redirect, url_for, request
+from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
+from werkzeug.security import generate_password_hash, check_password_hash
 
 def register_routes(app):
+    login_manager = LoginManager()
+    login_manager.init_app(app)
+    login_manager.login_view = 'login_route'
+
+
+    @login_manager.user_loader
+    def load_user(user_id):
+        conn = db_utils.get_db_connection()
+        cur = conn.cursor()
+        cur.execute("SELECT pk_users_id, name FROM users WHERE pk_users_id = %s", (user_id,))
+        row = cur.fetchone()
+        cur.close()
+        conn.close()
+        if row:
+            return User(row[0], row[1])
+        return None
+
+    @app.route('/login', methods=['GET', 'POST'])
+    def login_route():
+        return auth_routes.login()
+        
+    @app.route('/register', methods=['GET', 'POST'])
+    def register_route():
+        return auth_routes.register()
+
+    @app.route('/logout')
+    @login_required
+    def logout_route():
+        return auth_routes.logout()
+    
     @app.route('/')
-    def home():
-        return render_template('home.html', user=current_user)
+    @login_required
+    def home_route():
+        return home_routes.home()
+    
+    @app.route('/getting_started')
+    @login_required
+    def getting_started_home_route():
+        return getting_started_routes.getting_started_home()
 
-#     @app.route('/budget')
-#     @login_required
-#     def budget_home():
-#         return render_template('budget_home.html')
+    @app.route('/budget')
+    @login_required
+    def budget_home_route():
+        return budget_routes.budget_home()
+    
+    @app.route('/budget_create')
+    @login_required
+    def budget_create_route():
+        return budget_routes.budget_create()
+    
+    @app.route('/budget_select')
+    @login_required
+    def budget_select_route():
+        return budget_routes.budget_select()
+    
 
-#     @app.route('/register', methods=['GET', 'POST'])
-#     def register():
-#         if request.method == 'POST':
-#             username = request.form['username']
-#             password = generate_password_hash(request.form['password'])
-#             conn = get_db_connection()
-#             cur = conn.cursor()
-#             cur.execute("INSERT INTO users (username, password) VALUES (%s, %s)", (username, password))
-#             conn.commit()
-#             cur.close()
-#             conn.close()
-#             flash('Registered! Please log in.')
-#             return redirect(url_for('login'))
-#         return render_template('register.html')
-
-#     @app.route('/login', methods=['GET', 'POST'])
-#     def login():
-#         if request.method == 'POST':
-#             username = request.form['username']
-#             password = request.form['password']
-#             conn = get_db_connection()
-#             cur = conn.cursor()
-#             cur.execute("SELECT id, username, password FROM users WHERE username = %s", (username,))
-#             user = cur.fetchone()
-#             cur.close()
-#             conn.close()
-#             if user and check_password_hash(user[2], password):
-#                 login_user(User(user[0], user[1]))
-#                 session['user_id'] = user[0]  # ✅ This is what you need
-#                 return redirect(url_for('home'))
-#             flash('Invalid login')
-#         return render_template('login.html')
-
-#     @app.route('/logout')
-#     @login_required
-#     def logout():
-#         logout_user()
-#         return redirect(url_for('home'))
 
 #     @app.route('/logtransaction', methods=['GET', 'POST'])
 #     @login_required
 #     def logtransaction():
-#         conn = get_db_connection()
+#         conn = db_utils.get_db_connection()
 #         cur = conn.cursor()
 
 #         if request.method == 'POST':
@@ -121,7 +135,7 @@ def register_routes(app):
 #                 flash("Type name cannot be empty.")
 #                 return render_template('modifybudget.html')
 
-#             conn = get_db_connection()
+#             conn = db_utils.get_db_connection()
 #             cur = conn.cursor()
 
 #             # Check if type already exists
@@ -152,7 +166,7 @@ def register_routes(app):
 #     def deletebudget():
 #         type_id = int(request.form['category_id'])  # Grabbing it from the form
 
-#         conn = get_db_connection()
+#         conn = db_utils.get_db_connection()
 #         cur = conn.cursor()
 
 #         # Check if category is in use
@@ -174,7 +188,7 @@ def register_routes(app):
 #     @app.route('/modifybudget', methods=['GET', 'POST'])
 #     @login_required
 #     def modifybudget():
-#         conn = get_db_connection()
+#         conn = db_utils.get_db_connection()
 #         cur = conn.cursor()
 
 #         # Fetch categories for dropdown
@@ -263,7 +277,7 @@ def register_routes(app):
 #     @app.route('/editbudget/<int:budget_id>', methods=['GET', 'POST'])
 #     @login_required
 #     def editbudget(budget_id):
-#         conn = get_db_connection()
+#         conn = db_utils.get_db_connection()
 #         cur = conn.cursor()
 
 #         # Fetch the budget row by ID
@@ -344,7 +358,7 @@ def register_routes(app):
 #         selected_categories = []
 #         selected_weeks = []
 
-#         conn = get_db_connection()
+#         conn = db_utils.get_db_connection()
 #         cur = conn.cursor()
 
 #         # Get all categories from DB (exclude Total)
@@ -514,7 +528,7 @@ def register_routes(app):
 #             flash("Invalid date range.")
 #             return redirect(url_for('viewbudget'))
 
-#         conn = get_db_connection()
+#         conn = db_utils.get_db_connection()
 #         cur = conn.cursor()
 
 #         cur.execute('''
@@ -580,7 +594,7 @@ def register_routes(app):
 
 #         # Count total items for pagination
 #         count_query = f"SELECT COUNT(*) FROM ({query}) AS subquery"
-#         cur = get_db_connection().cursor()
+#         cur = db_utils.get_db_connection().cursor()
 #         cur.execute(count_query, params)
 #         total_items = cur.fetchone()[0]
 
@@ -616,7 +630,7 @@ def register_routes(app):
 #     @app.route('/transactions/delete/<int:txn_id>', methods=['POST'])
 #     @login_required
 #     def delete_transaction(txn_id):
-#         conn = get_db_connection()
+#         conn = db_utils.get_db_connection()
 #         cur = conn.cursor()
 
 #         # Optional: Ensure current user owns this transaction
@@ -636,7 +650,7 @@ def register_routes(app):
 #     @app.route('/transactions/modify/<int:txn_id>', methods=['GET', 'POST'])
 #     @login_required
 #     def modify_transaction(txn_id):
-#         conn = get_db_connection()
+#         conn = db_utils.get_db_connection()
 #         cur = conn.cursor()
 #         # Fetch the transaction to edit, ensure it belongs to current user
 #         cur.execute('''
