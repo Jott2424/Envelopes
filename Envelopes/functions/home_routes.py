@@ -22,4 +22,4 @@ def home():
     #     # No budgets found, redirect or prompt
     #     return redirect(url_for('getting_started_home_route'))
 
-    return render_template('home.html')
+    return render_template('home.html', user=current_user)
