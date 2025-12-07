@@ -81,10 +81,10 @@ def register_routes(app):
     def budget_create_route():
         return budget_routes.budget_create()
     
-    @app.route('/budget_select', methods=['GET', 'POST'])
+    @app.route('/budget_select_default', methods=['GET', 'POST'])
     @login_required
-    def budget_select_route():
-        return budget_routes.budget_select()
+    def budget_select_default_route():
+        return budget_routes.budget_select_default()
     
 
 

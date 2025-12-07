@@ -25,7 +25,7 @@ def budget_home():
 def budget_create():
     return render_template('budget_create.html')
 
-def budget_select():
+def budget_select_default():
     conn = db_utils.get_db_connection()
     cur = conn.cursor()
 
@@ -76,4 +76,7 @@ def budget_select():
     cur.close()
     conn.close()
 
+    return render_template('budget_select_default.html', budgets=budgets)
+
+def budget_invite_users():
     return render_template('budget_select.html', budgets=budgets)
