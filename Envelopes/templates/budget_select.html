@@ -8,18 +8,22 @@
         .budget-list { list-style-type: none; padding: 0; }
         .budget-item { margin: 10px 0; display: flex; align-items: center; }
         .budget-item label { margin-left: 8px; }
+        button {
+            margin-top: 20px;
+            padding: 10px 18px;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
     <h1>Budget Selection</h1>
-
     {% if budgets %}
         <form method="POST" action="{{ url_for('budget_select_route') }}">
             <ul class="budget-list">
                 {% for budget in budgets %}
                     <li class="budget-item">
-                        <input type="radio" name="selected_budget" value="{{ budget }}" required>
-                        <label>{{ budget }}</label>
+                        <input type="radio" name="selected_budget" value="{{ budget[0] }}" required>
+                        <label>{{ budget[1] }}</label>
                     </li>
                 {% endfor %}
             </ul>
