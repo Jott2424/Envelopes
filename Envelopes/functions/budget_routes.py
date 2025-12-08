@@ -15,7 +15,6 @@ def budget_home():
     """, (current_user.id,))
     
     existing = cur.fetchone()
-    print(existing)
 
     if existing:
         return render_template('budget_home.html')
@@ -130,7 +129,6 @@ def budget_invite_users():
 
     if request.method == 'POST':
         selected_user_id = request.form.get('selected_user')
-        print(selected_user_id)
         if not selected_user_id:
             return "No user selected", 400
         
@@ -149,7 +147,6 @@ def budget_invite_users():
             WHERE fk_users_id = %s
         """, (selected_user_id,))
         existing = cur.fetchone()
-        print(existing)
         if existing != None:
             # Update existing record
             cur.execute("""
