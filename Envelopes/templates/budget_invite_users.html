@@ -2,8 +2,8 @@
 <body>
     <h1>User Selection</h1>
     {% if users %}
-        <form method="POST" action="{{ url_for('budget_select_default_route') }}">
-            <ul class="budget-list">
+        <form method="POST" action="{{ url_for('budget_invite_users_route') }}">
+            <ul class="user-list">
                 {% for user in users %}
                     <li class="user-item">
                         <input type="radio" name="selected_user" value="{{ user[0] }}" required>

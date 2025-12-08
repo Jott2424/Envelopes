@@ -113,42 +113,49 @@ def budget_invite_users():
     conn = db_utils.get_db_connection()
     cur = conn.cursor()
 
-    # if request.method == 'POST':
-    #     selected_budget_id = request.form.get('selected_budget')
-
-    #     if not selected_budget_id:
-    #         return "No budget selected", 400
-
-    #     # Check if the user already has a default budget
-    #     cur.execute("""
-    #         SELECT pk_user_default_budget_id
-    #         FROM user_default_budget
-    #         WHERE fk_users_id = %s
-    #     """, (current_user.id,))
+    if request.method == 'POST':
+        selected_user_id = request.form.get('selected_user')
+        print(selected_user_id)
+        if not selected_user_id:
+            return "No user selected", 400
         
-    #     existing = cur.fetchone()
+        # Get the id of the current budget
+        cur.execute("""
+            SELECT fk_budgets_id
+            FROM user_default_budget
+            WHERE fk_users_id = %s
+        """, (current_user.id,))
+        current_budget = cur.fetchone()
 
-    #     if existing:
-    #         # Update existing record
-    #         cur.execute("""
-    #             UPDATE user_default_budget
-    #             SET fk_budgets_id = %s
-    #             WHERE fk_users_id = %s
-    #         """, (selected_budget_id, current_user.id))
-    #     else:
-    #         # Insert new default record
-    #         cur.execute("""
-    #             INSERT INTO user_default_budget (fk_users_id, fk_budgets_id)
-    #             VALUES (%s, %s)
-    #         """, (current_user.id, selected_budget_id))
+        # Check if the user already has a default budget
+        cur.execute("""
+            SELECT fk_budgets_id
+            FROM user_default_budget
+            WHERE fk_users_id = %s
+        """, (selected_user_id,))
+        existing = cur.fetchone()
 
-    #     conn.commit()
-    #     cur.close()
-    #     conn.close()
+        if existing:
+            # Update existing record
+            cur.execute("""
+                UPDATE user_default_budget
+                SET fk_budgets_id = %s
+                WHERE fk_users_id = %s
+            """, (current_budget, selected_user_id))
+        else:
+            # Insert new default record
+            cur.execute("""
+                INSERT INTO user_default_budget (fk_users_id, fk_budgets_id)
+                VALUES (%s, %s)
+            """, (selected_user_id, current_budget))
 
-    #     return redirect(url_for('budget_home_route'))
+        conn.commit()
+        cur.close()
+        conn.close()
 
-    # GET request – show budget selection
+        return redirect(url_for('budget_home_route'))
+
+    # GET request – show user selection
     cur.execute("""
         SELECT u.pk_users_id, u.name
         FROM users u
