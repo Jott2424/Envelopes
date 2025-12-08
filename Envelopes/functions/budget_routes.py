@@ -20,7 +20,7 @@ def budget_home():
     if existing:
         return render_template('budget_home.html')
     else:
-        return render_template('budget_select.html')
+        return render_template('budget_select_default.html')
 
 def budget_create():
     if request.method == 'POST':
