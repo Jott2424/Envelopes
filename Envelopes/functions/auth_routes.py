@@ -1,9 +1,10 @@
 from classes.user import User
+from functions import db_utils, queries
 
 from flask import request, render_template, redirect, url_for
 from flask_login import login_user, logout_user
 from werkzeug.security import generate_password_hash, check_password_hash
-from functions import db_utils
+
 
 def login():
     if request.method == 'POST':
@@ -11,7 +12,7 @@ def login():
         password = request.form.get('password')
         conn = db_utils.get_db_connection()
         cur = conn.cursor()
-        cur.execute("SELECT pk_users_id, name, password FROM users WHERE name = %s", (username,))
+        cur.execute(queries.GET_USERS_BY_NAME, (username,))
         row = cur.fetchone()
         cur.close()
         conn.close()
@@ -36,9 +37,10 @@ def register():
 
         conn = db_utils.get_db_connection()
         cur = conn.cursor()
-        cur.execute("INSERT INTO users (name, password) VALUES (%s, %s) RETURNING pk_users_id",
-                    (username, password_hash))
+        #insert user and return pk
+        cur.execute(queries.INSERT_INTO_USERS_RETURN_PK,(username, password_hash))
         user_id = cur.fetchone()[0]
+
         conn.commit()
         cur.close()
         conn.close()

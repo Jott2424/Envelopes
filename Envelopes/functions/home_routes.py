@@ -1,5 +1,5 @@
 from config import DB_HOST, DB_NAME, DB_USER, DB_PASS, DB_PORT
-from functions import db_utils
+from functions import db_utils, queries
 
 from flask import render_template, redirect, url_for
 from flask_login import current_user
@@ -9,10 +9,7 @@ def home():
     cur = conn.cursor()
 
     # Query budgets for the current user
-    cur.execute("""
-        SELECT *
-        FROM budgets
-    """)
+    cur.execute(queries.GET_ALL_BUDGETS)
 
     budgets = cur.fetchall()
     cur.close()

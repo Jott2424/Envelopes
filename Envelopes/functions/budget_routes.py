@@ -1,4 +1,4 @@
-from functions import db_utils
+from functions import db_utils, queries
 
 from flask import render_template, request, redirect, url_for
 from flask_login import current_user
@@ -8,11 +8,7 @@ def budget_home():
     cur = conn.cursor()
 
     #check for default budget
-    cur.execute("""
-        SELECT pk_user_default_budget_id
-        FROM user_default_budget
-        WHERE fk_users_id = %s
-    """, (current_user.id,))
+    cur.execute(queries.GET_DEFAULT_BUDGET_BY_USER_ID, (current_user.id,))
     
     existing = cur.fetchone()
 
@@ -24,45 +20,28 @@ def budget_home():
 def budget_create():
     if request.method == 'POST':
         budget_name = request.form.get('budget_name')
-
+        
         conn = db_utils.get_db_connection()
         cur = conn.cursor()
-        #insert new budget to budgets
-        cur.execute("""
-                INSERT INTO budgets (name)
-                VALUES (%s)
-            """, (budget_name,))
-        #get the new budget id
-        cur.execute("""
-            SELECT pk_budgets_id
-            FROM budgets WHERE name = %s
-            """, (budget_name,))
+
+        #insert new budget to budgets and get ID
+        cur.execute(queries.INSERT_INTO_BUDGETS_RETURN_PK, (budget_name,))
         pk = cur.fetchone()
+
         # Check if the user already has a default budget
-        cur.execute("""
-            SELECT pk_user_default_budget_id
-            FROM user_default_budget
-            WHERE fk_users_id = %s
-        """, (current_user.id,))
+        cur.execute(queries.GET_DEFAULT_BUDGET_BY_USER_ID, (current_user.id,))
         existing = cur.fetchone()
+
         if existing:
             # Update existing record
-            cur.execute("""
-                UPDATE user_default_budget
-                SET fk_budgets_id = %s
-                WHERE pk_user_default_budget_id = %s
-            """, (pk, existing))
+            cur.execute(queries.UPDATE_USER_DEFAULT_BUDGET_BY_USER_ID, (pk, existing))
         else:
             # Insert new default record
-            cur.execute("""
-                INSERT INTO user_default_budget (fk_users_id, fk_budgets_id)
-                VALUES (%s, %s)
-            """, (current_user.id, selected_budget_id))
+            cur.execute(queries.INSERT_INTO_USER_DEFAULT_BUDGETS, (current_user.id, selected_budget_id))
+
         #insert new budget to budgets_users (table of who is allowed to access which budgets)
-        cur.execute("""
-                INSERT INTO budget_users (fk_budgets_id, fk_users_id)
-                VALUES (%s, %s)
-            """, (pk, current_user.id))
+        cur.execute(queries.INSERT_INTO_BUDGET_USERS, (pk, current_user.id))
+
         conn.commit()
         cur.close()
         conn.close()
@@ -81,27 +60,16 @@ def budget_select_default():
             return "No budget selected", 400
 
         # Check if the user already has a default budget
-        cur.execute("""
-            SELECT pk_user_default_budget_id
-            FROM user_default_budget
-            WHERE fk_users_id = %s
-        """, (current_user.id,))
+        cur.execute(queries.GET_DEFAULT_BUDGET_BY_USER_ID, (current_user.id,))
         
         existing = cur.fetchone()
 
         if existing:
             # Update existing record
-            cur.execute("""
-                UPDATE user_default_budget
-                SET fk_budgets_id = %s
-                WHERE pk_user_default_budget_id = %s
-            """, (selected_budget_id, existing))
+            cur.execute(queries.UPDATE_USER_DEFAULT_BUDGET_BY_USER_ID, (selected_budget_id, existing))
         else:
             # Insert new default record
-            cur.execute("""
-                INSERT INTO user_default_budget (fk_users_id, fk_budgets_id)
-                VALUES (%s, %s)
-            """, (current_user.id, selected_budget_id))
+            cur.execute(queries.INSERT_INTO_USER_DEFAULT_BUDGETS, (current_user.id, selected_budget_id))
 
         conn.commit()
         cur.close()
@@ -110,12 +78,7 @@ def budget_select_default():
         return redirect(url_for('budget_home_route'))
 
     # GET request – show budget selection
-    cur.execute("""
-        SELECT b.pk_budgets_id, b.name
-        FROM budgets b
-        JOIN budget_users bu ON b.pk_budgets_id = bu.fk_budgets_id
-        WHERE bu.fk_users_id = %s
-    """, (current_user.id,))
+    cur.execute(queries.GET_BUDGET_NAME_BY_BUDGET_USERS, (current_user.id,))
     budgets = cur.fetchall()
 
     cur.close()
@@ -133,39 +96,22 @@ def budget_invite_users():
             return "No user selected", 400
         
         # Get the id of the current budget
-        cur.execute("""
-            SELECT fk_budgets_id
-            FROM user_default_budget
-            WHERE fk_users_id = %s
-        """, (current_user.id,))
+        cur.execute(queries.GET_DEFAULT_BUDGET_BY_USER_ID, (current_user.id,))
         current_budget = cur.fetchone()
 
-        # Check if the user already has a default budget
-        cur.execute("""
-            SELECT fk_budgets_id
-            FROM user_default_budget
-            WHERE fk_users_id = %s
-        """, (selected_user_id,))
+        # Check if the selected user already has a default budget
+        cur.execute(queries.GET_DEFAULT_BUDGET_BY_USER_ID, (selected_user_id,))
         existing = cur.fetchone()
+
         if existing != None:
             # Update existing record
-            cur.execute("""
-                UPDATE user_default_budget
-                SET fk_budgets_id = %s
-                WHERE fk_users_id = %s
-            """, (current_budget, selected_user_id))
+            cur.execute(queries.UPDATE_USER_DEFAULT_BUDGET_BY_USER_ID, (selected_budget_id, selected_user_id))
         else:
             # Insert new default record
-            cur.execute("""
-                INSERT INTO user_default_budget (fk_users_id, fk_budgets_id)
-                VALUES (%s, %s)
-            """, (selected_user_id, current_budget))
+            cur.execute(queries.INSERT_INTO_USER_DEFAULT_BUDGETS, (selected_user_id, current_budget))
         
         #insert user to allowed budgets table
-        cur.execute("""
-            INSERT INTO budget_users (fk_budgets_id, fk_users_id)
-            VALUES (%s, %s)
-        """, (current_budget, selected_user_id))
+        cur.execute(queries.INSERT_INTO_USER_DEFAULT_BUDGETS, (current_budget, selected_user_id))
 
         conn.commit()
         cur.close()
@@ -175,19 +121,10 @@ def budget_invite_users():
 
     # GET request – show user selection
     # Get the id of the current budget
-    cur.execute("""
-        SELECT fk_budgets_id
-        FROM user_default_budget
-        WHERE fk_users_id = %s
-    """, (current_user.id,))
+    cur.execute(queries.GET_DEFAULT_BUDGET_BY_USER_ID, (current_user.id,))
     current_budget = cur.fetchone()
 
-    cur.execute("""
-        SELECT u.pk_users_id, u.name
-        FROM users u
-        WHERE u.pk_users_id != %s
-        AND u.pk_users_id NOT IN (SELECT fk_users_id FROM budget_users WHERE fk_budgets_id = %s)
-    """, (current_user.id,current_budget))
+    cur.execute(queries.GET_USERS_NOT_ALREADY_IN_BUDGET_USERS_BY_USER_ID, (current_user.id,current_budget))
     users = cur.fetchall()
 
     cur.close()
@@ -200,11 +137,7 @@ def budget_settings():
     cur = conn.cursor()
 
     #check for default budget
-    cur.execute("""
-        SELECT pk_user_default_budget_id
-        FROM user_default_budget
-        WHERE fk_users_id = %s
-    """, (current_user.id,))
+    cur.execute(queries.GET_DEFAULT_BUDGET_BY_USER_ID, (current_user.id,))
     
     existing = cur.fetchone()
 

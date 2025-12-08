@@ -1,5 +1,4 @@
-from functions import db_utils
-from functions import queries
+from functions import db_utils, queries
 
 from flask import render_template, request, redirect, url_for, flash
 from flask_login import current_user
@@ -33,10 +32,7 @@ def envelopes_create():
         
         # if not then insert
         if exists == None:
-            cur.execute(queries.INSERT_INTO_ENVELOPES,(budget_id, name))
-
-            #get this inserted envelopes id
-            cur.execute(queries.GET_ENVELOPE_BY_NAME_AND_BUDGET_ID, (name,budget_id))
+            cur.execute(queries.INSERT_INTO_ENVELOPES_RETURN_PK, (budget_id,name))
             pk_id = cur.fetchone()[0]
 
             #insert this envelope's columns into the column tracking table
