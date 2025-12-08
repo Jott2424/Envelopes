@@ -18,7 +18,7 @@
 # functions/app_routing.py
 import psycopg2
 from config import DB_HOST, DB_NAME, DB_USER, DB_PASS, DB_PORT
-from functions import auth_routes, db_utils, budget_routes, home_routes, getting_started_routes
+from functions import auth_routes, db_utils, budget_routes, home_routes, getting_started_routes, envelopes_routes
 from classes.user import User
 
 from flask import render_template, redirect, url_for, request
@@ -90,8 +90,16 @@ def register_routes(app):
     @login_required
     def budget_invite_users_route():
         return budget_routes.budget_invite_users()
-    
-    
+
+    @app.route('/budget_settings', methods=['GET', 'POST'])
+    @login_required
+    def budget_settings_route():
+        return budget_routes.budget_settings()
+
+    @app.route('/envelopes', methods=['GET', 'POST'])
+    @login_required
+    def envelopes_home_route():
+        return envelopes_routes.envelopes_home()
     
 
 

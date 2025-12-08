@@ -194,3 +194,21 @@ def budget_invite_users():
     conn.close()
 
     return render_template('budget_invite_users.html', users=users)
+
+def budget_settings():
+    conn = db_utils.get_db_connection()
+    cur = conn.cursor()
+
+    #check for default budget
+    cur.execute("""
+        SELECT pk_user_default_budget_id
+        FROM user_default_budget
+        WHERE fk_users_id = %s
+    """, (current_user.id,))
+    
+    existing = cur.fetchone()
+
+    if existing:
+        return render_template('budget_settings.html')
+    else:
+        return render_template('budget_select_default.html')

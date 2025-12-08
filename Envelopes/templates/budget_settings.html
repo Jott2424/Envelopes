@@ -1,0 +1,21 @@
+{% block content %}
+<div class="budget-settings-container">
+    <h1 class="budget-settings-title">Budget Settings</h1>
+
+    <div class="btn-group">
+        <a href="{{ url_for('budget_create_route') }}" class="btn">Create A New Budget</a>
+    </div>
+    <div class="btn-group">
+        <a href="{{ url_for('budget_select_default_route') }}" class="btn">Select A New Default Budget</a>
+    </div>
+    <div class="btn-group">
+        <a href="{{ url_for('budget_invite_users_route') }}" class="btn">Add a User To Your Budget</a>
+    </div>
+    <div class="btn-group2">
+        <a href="{{ url_for('budget_home_route') }}" class="btn">Budget</a>
+    </div>
+    <div class="btn-group2">
+        <a href="{{ url_for('logout_route') }}" class="btn">Logout</a>
+    </div>
+</div>
+{% endblock %}
