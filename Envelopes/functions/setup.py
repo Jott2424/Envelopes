@@ -99,6 +99,7 @@ def first_time_init_db():
             pk_envelope_transaction_fields_id SERIAL PRIMARY KEY,
             fk_budgets_id INTEGER REFERENCES budgets(pk_budgets_id),
             fk_envelopes_id INTEGER REFERENCES envelopes(pk_envelopes_id),
+            form_order INTEGER NOT NULL,
             field_name TEXT NOT NULL,
             field_type TEXT NOT NULL,
             is_required BOOLEAN NOT NULL

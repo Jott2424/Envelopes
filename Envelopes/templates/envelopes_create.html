@@ -1,0 +1,77 @@
+{% block content %}
+
+<!-- FLASH MESSAGES -->
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    <div class="flash-container">
+      {% for category, msg in messages %}
+        <div class="flash flash-{{ category }}">
+          {{ msg }}
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+{% endwith %}
+
+<h1>Create An Envelope</h1>
+
+<div class="container">
+    <form method="POST" id="envelope-form">
+
+        <label for="Name">Envelope Name</label>
+        <textarea id="Name" name="envelope_name" rows="1"></textarea>
+
+        <hr>
+
+        <h3>What data should this envelope track?</h3>
+
+        <div id="trackers-container">
+            <!-- First tracker row -->
+            <div class="tracker-row" style="margin-bottom:10px; display:flex; gap:10px; align-items:center;">
+                <input type="text" name="trackers[]" placeholder="Tracker 1" style="width:200px;">
+                <select name="types[]">
+                    <option value="text">Text</option>
+                    <option value="numeric(10,2)">Numeric(10,2)</option>
+                    <option value="date">Date</option>
+                </select>
+                <label>
+                    <input type="checkbox" name="required[]" value="0">
+                    Required
+                </label>
+            </div>
+        </div>
+
+        <button type="button" id="add-tracker">+ Add Another</button>
+        <button type="submit">Create Envelope</button>
+    </form>
+</div>
+
+<script>
+let trackerCount = 1; // Already 1 row exists
+
+document.getElementById("add-tracker").addEventListener("click", function() {
+    trackerCount += 1;
+
+    const container = document.getElementById("trackers-container");
+
+    const div = document.createElement("div");
+    div.classList.add("tracker-row");
+    div.style = "margin-bottom:10px; display:flex; gap:10px; align-items:center;";
+
+    div.innerHTML = `
+        <input type="text" name="trackers[]" placeholder="Tracker ${trackerCount}" style="width:200px;">
+        <select name="types[]">
+            <option value="text">Text</option>
+            <option value="numeric(10,2)">Numeric(10,2)</option>
+            <option value="date">Date</option>
+        </select>
+        <label>
+            <input type="checkbox" name="required[]" value="${trackerCount - 1}">
+            Required
+        </label>
+    `;
+
+    container.appendChild(div);
+});
+</script>
+{% endblock %}
