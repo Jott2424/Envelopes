@@ -39,11 +39,26 @@ def budget_create():
             FROM budgets WHERE name = %s
             """, (budget_name,))
         pk = cur.fetchone()
-        #insert new budget to user default budgets
+        # Check if the user already has a default budget
         cur.execute("""
-                INSERT INTO user_default_budget (fk_budgets_id, fk_users_id)
+            SELECT pk_user_default_budget_id
+            FROM user_default_budget
+            WHERE fk_users_id = %s
+        """, (current_user.id,))
+        existing = cur.fetchone()
+        if existing:
+            # Update existing record
+            cur.execute("""
+                UPDATE user_default_budget
+                SET fk_budgets_id = %s
+                WHERE pk_user_default_budget_id = %s
+            """, (pk, existing))
+        else:
+            # Insert new default record
+            cur.execute("""
+                INSERT INTO user_default_budget (fk_users_id, fk_budgets_id)
                 VALUES (%s, %s)
-            """, (pk, current_user.id))
+            """, (current_user.id, selected_budget_id))
         #insert new budget to budgets_users (table of who is allowed to access which budgets)
         cur.execute("""
                 INSERT INTO budget_users (fk_budgets_id, fk_users_id)
@@ -80,8 +95,8 @@ def budget_select_default():
             cur.execute("""
                 UPDATE user_default_budget
                 SET fk_budgets_id = %s
-                WHERE fk_users_id = %s
-            """, (selected_budget_id, current_user.id))
+                WHERE pk_user_default_budget_id = %s
+            """, (selected_budget_id, existing))
         else:
             # Insert new default record
             cur.execute("""
@@ -134,8 +149,8 @@ def budget_invite_users():
             WHERE fk_users_id = %s
         """, (selected_user_id,))
         existing = cur.fetchone()
-
-        if existing:
+        print(existing)
+        if existing != None:
             # Update existing record
             cur.execute("""
                 UPDATE user_default_budget
@@ -148,6 +163,12 @@ def budget_invite_users():
                 INSERT INTO user_default_budget (fk_users_id, fk_budgets_id)
                 VALUES (%s, %s)
             """, (selected_user_id, current_budget))
+        
+        #insert user to allowed budgets table
+        cur.execute("""
+            INSERT INTO budget_users (fk_budgets_id, fk_users_id)
+            VALUES (%s, %s)
+        """, (current_budget, selected_user_id))
 
         conn.commit()
         cur.close()
@@ -156,11 +177,20 @@ def budget_invite_users():
         return redirect(url_for('budget_home_route'))
 
     # GET request – show user selection
+    # Get the id of the current budget
+    cur.execute("""
+        SELECT fk_budgets_id
+        FROM user_default_budget
+        WHERE fk_users_id = %s
+    """, (current_user.id,))
+    current_budget = cur.fetchone()
+
     cur.execute("""
         SELECT u.pk_users_id, u.name
         FROM users u
         WHERE u.pk_users_id != %s
-    """, (current_user.id,))
+        AND u.pk_users_id NOT IN (SELECT fk_users_id FROM budget_users WHERE fk_budgets_id = %s)
+    """, (current_user.id,current_budget))
     users = cur.fetchall()
 
     cur.close()
