@@ -26,7 +26,7 @@ def login():
 
 def logout():
     logout_user()
-    return redirect(url_for('login'))
+    return redirect(url_for('login_route'))
 
 def register():
     if request.method == 'POST':
