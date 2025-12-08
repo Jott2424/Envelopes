@@ -86,6 +86,13 @@ def register_routes(app):
     def budget_select_default_route():
         return budget_routes.budget_select_default()
     
+    @app.route('/budget_invite_users', methods=['GET', 'POST'])
+    @login_required
+    def budget_invite_users_route():
+        return budget_routes.budget_invite_users()
+    
+    
+    
 
 
 #     @app.route('/logtransaction', methods=['GET', 'POST'])

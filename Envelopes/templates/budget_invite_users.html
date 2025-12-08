@@ -1,0 +1,23 @@
+{% block content %}
+<body>
+    <h1>User Selection</h1>
+    {% if users %}
+        <form method="POST" action="{{ url_for('budget_select_default_route') }}">
+            <ul class="budget-list">
+                {% for user in users %}
+                    <li class="user-item">
+                        <input type="radio" name="selected_user" value="{{ user[0] }}" required>
+                        <label>{{ user[1] }}</label>
+                    </li>
+                {% endfor %}
+            </ul>
+
+            <button type="submit">Continue</button>
+        </form>
+    {% else %}
+        <p>You don't have any users yet.
+            <a href="{{ url_for('home_route') }}">Home</a>.
+        </p>
+    {% endif %}
+</body>
+{% endblock %}

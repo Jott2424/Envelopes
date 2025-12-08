@@ -110,4 +110,53 @@ def budget_select_default():
     return render_template('budget_select_default.html', budgets=budgets)
 
 def budget_invite_users():
-    return render_template('budget_select.html', budgets=budgets)
+    conn = db_utils.get_db_connection()
+    cur = conn.cursor()
+
+    # if request.method == 'POST':
+    #     selected_budget_id = request.form.get('selected_budget')
+
+    #     if not selected_budget_id:
+    #         return "No budget selected", 400
+
+    #     # Check if the user already has a default budget
+    #     cur.execute("""
+    #         SELECT pk_user_default_budget_id
+    #         FROM user_default_budget
+    #         WHERE fk_users_id = %s
+    #     """, (current_user.id,))
+        
+    #     existing = cur.fetchone()
+
+    #     if existing:
+    #         # Update existing record
+    #         cur.execute("""
+    #             UPDATE user_default_budget
+    #             SET fk_budgets_id = %s
+    #             WHERE fk_users_id = %s
+    #         """, (selected_budget_id, current_user.id))
+    #     else:
+    #         # Insert new default record
+    #         cur.execute("""
+    #             INSERT INTO user_default_budget (fk_users_id, fk_budgets_id)
+    #             VALUES (%s, %s)
+    #         """, (current_user.id, selected_budget_id))
+
+    #     conn.commit()
+    #     cur.close()
+    #     conn.close()
+
+    #     return redirect(url_for('budget_home_route'))
+
+    # GET request – show budget selection
+    cur.execute("""
+        SELECT u.pk_users_id, u.name
+        FROM users u
+        WHERE u.pk_users_id != %s
+    """, (current_user.id,))
+    users = cur.fetchall()
+
+    cur.close()
+    conn.close()
+
+    return render_template('budget_invite_users.html', users=users)
