@@ -100,7 +100,11 @@ def register_routes(app):
     @login_required
     def envelopes_home_route():
         return envelopes_routes.envelopes_home()
-    
+
+    @app.route('/envelopes_view', methods=['GET', 'POST'])
+    @login_required
+    def envelopes_view_route():
+        return envelopes_routes.envelopes_view()
 
 
 #     @app.route('/logtransaction', methods=['GET', 'POST'])

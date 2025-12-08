@@ -1,1 +1,19 @@
-print(hi)
+{% block content %}
+<div class="budget-home-container">
+    <h1 class="budget-home-title">Envelopes</h1>
+
+    <div class="btn-group">
+        <a href="{{ url_for('envelopes_view_route') }}" class="btn">View Envelopes</a>
+    </div>
+    <div class="btn-group">
+        <a href="{{ url_for('envelopes_create_route') }}" class="btn">Create A New Envelope</a>
+    </div>
+
+    <div class="btn-group2">
+        <a href="{{ url_for('home_route') }}" class="btn">Home</a>
+    </div>
+    <div class="btn-group2">
+        <a href="{{ url_for('logout_route') }}" class="btn">Logout</a>
+    </div>
+</div>
+{% endblock %}
