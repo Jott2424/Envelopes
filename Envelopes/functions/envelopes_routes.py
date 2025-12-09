@@ -12,6 +12,18 @@ def envelopes_view():
 
     #first get the budget id
     cur.execute(queries.GET_DEFAULT_BUDGET_BY_USER_ID,(current_user.id,))
+    budget_id = cur.fetchone()[0]
+    
+    #then get the envelopes in this budget
+    cur.execute(queries.GET_ENVELOPES_AND_TRANSACTION_FIELDS_BY_BUDGET_ID,(budget_id,))
+    rows = cur.fetchall()
+
+    envelopes = {}
+    for envelope_name, form_order, field_name, field_type, is_required in rows:
+        if envelope_name not in envelopes:
+            envelopes[envelope_name] = []
+        envelopes[envelope_name].append((form_order, field_name, field_type, is_required))
+
 
     return render_template('envelopes_view.html', envelopes=envelopes)
 

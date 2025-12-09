@@ -1,1 +1,26 @@
-print(hi)
+{% block content %}
+    {% if envelopes %}
+        <table border="1">
+            <thead>
+                <th>Envelope</th>
+                <th>Field Name</th>
+                <th>Field Data Type</th>
+                <th>Is Required</th>
+            </thead>
+        </table>
+        {% for envelope, envelope_details in envelopes.items() %}
+            <h3>{{ envelope }}</h3>
+                <table border="1">
+                    <tbody>
+                        {% for envelope_detail in envelope_details %}
+                            <tr>
+                                <td>{{ envelope_detail[1] }}</td>
+                                <td>{{ envelope_detail[2] }}</td>
+                                <td>{{ envelope_detail[3] }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+        {% endfor %}
+    {% endif %}
+{% endblock %}
