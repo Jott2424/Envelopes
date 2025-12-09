@@ -1,13 +1,5 @@
 {% block content %}
     {% if envelopes %}
-        <table border="1">
-            <thead>
-                <th>Envelope</th>
-                <th>Field Name</th>
-                <th>Field Data Type</th>
-                <th>Is Required</th>
-            </thead>
-        </table>
         {% for envelope, envelope_details in envelopes.items() %}
             <h3>{{ envelope }}</h3>
                 <table border="1">
@@ -23,4 +15,10 @@
                 </table>
         {% endfor %}
     {% endif %}
+    <div class="btn-group2">
+        <a href="{{ url_for('envelopes_home_route') }}" class="btn">Envelopes Home</a>
+    </div>
+    <div class="btn-group2">
+        <a href="{{ url_for('logout_route') }}" class="btn">Logout</a>
+    </div>
 {% endblock %}
