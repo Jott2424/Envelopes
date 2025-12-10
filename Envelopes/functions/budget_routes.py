@@ -3,19 +3,25 @@ from functions import db_utils, queries
 from flask import render_template, request, redirect, url_for
 from flask_login import current_user
 
-def budget_home():
+def budget_home(budget_id):
     conn = db_utils.get_db_connection()
     cur = conn.cursor()
 
-    #check for default budget
-    cur.execute(queries.GET_DEFAULT_BUDGET_BY_USER_ID, (current_user.id,))
-    
-    existing = cur.fetchone()[0]
+    # OPTIONAL: validate this budget belongs to the current user
+    cur.execute("""
+        SELECT pk_budgets_id 
+        FROM budgets_users 
+        WHERE fk_users_id = %s AND fk_budgets_id = %s
+    """, (current_user.id, budget_id))
 
-    if existing:
-        return render_template('budget_home.html')
-    else:
-        return render_template('budget_select_default.html')
+    authorized = cur.fetchone()
+    if not authorized:
+        return "Unauthorized", 403
+
+    conn.close()
+
+    # pass budget_id into template
+    return render_template('budget_home.html', budget_id=budget_id)
 
 def budget_create():
     if request.method == 'POST':

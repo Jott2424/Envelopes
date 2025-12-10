@@ -1,15 +1,23 @@
 {% block content %}
 <div class="budget-home-container">
     <h1 class="budget-home-title">Budget</h1>
+
     <div class="btn-group">
-        <a href="{{ url_for('envelopes_home_route') }}" class="btn">Envelopes</a>
+        <a href="{{ url_for('envelopes_home_route', budget_id=budget_id) }}" class="btn">
+            Envelopes
+        </a>
     </div>
+
     <div class="btn-group">
-        <a href="{{ url_for('budget_settings_route') }}" class="btn">Budget Settings</a>
+        <a href="{{ url_for('budget_settings_route', budget_id=budget_id) }}" class="btn">
+            Budget Settings
+        </a>
     </div>
+
     <div class="btn-group2">
         <a href="{{ url_for('home_route') }}" class="btn">Home</a>
     </div>
+
     <div class="btn-group2">
         <a href="{{ url_for('logout_route') }}" class="btn">Logout</a>
     </div>

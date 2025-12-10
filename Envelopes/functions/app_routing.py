@@ -1,20 +1,3 @@
-# def get_all_transaction_types():
-#     conn = db_utils.get_db_connection()
-#     cur = conn.cursor()
-#     cur.execute("SELECT DISTINCT transaction_type FROM transactions ORDER BY transaction_type;")
-#     types = [row[0] for row in cur.fetchall()]
-#     cur.close()
-#     return types
-
-# def get_all_years():
-#     conn = db_utils.get_db_connection()
-#     cur = conn.cursor()
-#     cur.execute("SELECT DISTINCT EXTRACT(YEAR FROM transaction_date) AS year FROM transactions ORDER BY year;")
-#     years = [int(row[0]) for row in cur.fetchall()]
-#     cur.close()
-#     return years
-
-
 # functions/app_routing.py
 import psycopg2
 from config import DB_HOST, DB_NAME, DB_USER, DB_PASS, DB_PORT
@@ -43,6 +26,7 @@ def register_routes(app):
             return User(row[0], row[1])
         return None
 
+########################## AUTH ##########################
     @app.route('/login', methods=['GET', 'POST'])
     def login_route():
         return auth_routes.login()
@@ -55,12 +39,14 @@ def register_routes(app):
     @login_required
     def logout_route():
         return auth_routes.logout()
-    
+
+########################## HOME ##########################
     @app.route('/')
     @login_required
     def home_route():
         return home_routes.home()
     
+########################## GETTING STARTED ##########################
     @app.route('/getting_started')
     @login_required
     def getting_started_home_route():
@@ -71,15 +57,17 @@ def register_routes(app):
     def getting_started_create_budget_route():
         return getting_started_routes.getting_started_create_budget_route()
 
-    @app.route('/budget')
-    @login_required
-    def budget_home_route():
-        return budget_routes.budget_home()
-    
-    @app.route('/budget_create', methods=['GET', 'POST'])
+########################## BUDGET ##########################
+    @app.route('/budget/create', methods=['GET', 'POST'])
     @login_required
     def budget_create_route():
         return budget_routes.budget_create()
+        
+    @app.route('/budget/<int:budget_id>')
+    @login_required
+    def budget_home_route(budget_id):
+        return budget_routes.budget_home(budget_id)
+
     
     @app.route('/budget_select_default', methods=['GET', 'POST'])
     @login_required

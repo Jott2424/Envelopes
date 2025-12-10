@@ -9,14 +9,14 @@ def home():
     cur = conn.cursor()
 
     # Query budgets for the current user
-    cur.execute(queries.GET_ALL_BUDGETS)
+    cur.execute(queries.GET_DEFAULT_BUDGET_BY_USER_ID, (current_user.id,))
 
-    budgets = cur.fetchall()
+    default_budget = cur.fetchone()[0]
     cur.close()
     conn.close()
 
-    if not budgets:
+    if not default_budget:
         # No budgets found, redirect or prompt
         return redirect(url_for('getting_started_create_budget_route'))
 
-    return render_template('home.html', user=current_user)
+    return render_template('home.html', user=current_user, budget_id=default_budget)
