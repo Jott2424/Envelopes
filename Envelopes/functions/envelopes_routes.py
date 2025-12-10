@@ -10,22 +10,31 @@ def envelopes_view():
     conn = db_utils.get_db_connection()
     cur = conn.cursor()
 
-    #first get the budget id
-    cur.execute(queries.GET_DEFAULT_BUDGET_BY_USER_ID,(current_user.id,))
+    # first get the budget id
+    cur.execute(queries.GET_DEFAULT_BUDGET_BY_USER_ID, (current_user.id,))
     budget_id = cur.fetchone()[0]
-    
-    #then get the envelopes in this budget
-    cur.execute(queries.GET_ENVELOPES_AND_TRANSACTION_FIELDS_BY_BUDGET_ID,(budget_id,))
+
+    # now get envelopes with transaction fields (must include envelope_id)
+    cur.execute(queries.GET_ENVELOPES_AND_TRANSACTION_FIELDS_BY_BUDGET_ID, (budget_id,))
     rows = cur.fetchall()
 
     envelopes = {}
-    for envelope_name, form_order, field_name, field_type, is_required in rows:
+
+    for envelope_id, envelope_name, form_order, field_name, field_type, is_required in rows:
         if envelope_name not in envelopes:
-            envelopes[envelope_name] = []
-        envelopes[envelope_name].append((form_order, field_name, field_type, is_required))
+            envelopes[envelope_name] = {
+                "id": envelope_id,
+                "details": []
+            }
 
+        # append field
+        envelopes[envelope_name]["details"].append(
+            (form_order, field_name, field_type, is_required)
+        )
 
+    conn.close()
     return render_template('envelopes_view.html', envelopes=envelopes)
+
 
 def envelopes_create():
     if request.method == 'POST':
@@ -71,3 +80,6 @@ def envelopes_create():
 
     # Initial page load
     return render_template("envelopes_create.html", num_trackers=1)
+
+def envelopes_edit():
+    return render_template("envelopes_edit.html")

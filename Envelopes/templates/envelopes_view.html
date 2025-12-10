@@ -1,23 +1,35 @@
 {% block content %}
     {% if envelopes %}
-        {% for envelope, envelope_details in envelopes.items() %}
-            <h3>{{ envelope }}</h3>
-                <table border="1">
-                    <tbody>
-                        {% for envelope_detail in envelope_details %}
-                            <tr>
-                                <td>{{ envelope_detail[1] }}</td>
-                                <td>{{ envelope_detail[2] }}</td>
-                                <td>{{ envelope_detail[3] }}</td>
-                            </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+        {% for envelope_name, data in envelopes.items() %}
+
+            <h3>
+                {{ envelope_name }}
+                <a class="btn btn-small" 
+                   href="{{ url_for('envelopes_edit_route', envelope_id=data.id) }}">
+                    Edit
+                </a>
+            </h3>
+
+            <table border="1">
+                <tbody>
+                    {% for detail in data.details %}
+                        <tr>
+                            <td>{{ detail[0] }}</td>
+                            <td>{{ detail[1] }}</td>
+                            <td>{{ detail[2] }}</td>
+                            <td>{{ detail[3] }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
         {% endfor %}
     {% endif %}
+
     <div class="btn-group2">
         <a href="{{ url_for('envelopes_home_route') }}" class="btn">Envelopes Home</a>
     </div>
+
     <div class="btn-group2">
         <a href="{{ url_for('logout_route') }}" class="btn">Logout</a>
     </div>
