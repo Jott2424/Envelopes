@@ -10,7 +10,7 @@ def budget_home():
     #check for default budget
     cur.execute(queries.GET_DEFAULT_BUDGET_BY_USER_ID, (current_user.id,))
     
-    existing = cur.fetchone()
+    existing = cur.fetchone()[0]
 
     if existing:
         return render_template('budget_home.html')
@@ -26,15 +26,16 @@ def budget_create():
 
         #insert new budget to budgets and get ID
         cur.execute(queries.INSERT_INTO_BUDGETS_RETURN_PK, (budget_name,))
-        pk = cur.fetchone()
+        pk = cur.fetchone()[0]
 
         # Check if the user already has a default budget
         cur.execute(queries.GET_DEFAULT_BUDGET_BY_USER_ID, (current_user.id,))
-        existing = cur.fetchone()
+        existing = cur.fetchone()[0]
+
 
         if existing:
             # Update existing record
-            cur.execute(queries.UPDATE_USER_DEFAULT_BUDGET_BY_USER_ID, (pk, existing))
+            cur.execute(queries.UPDATE_USER_DEFAULT_BUDGET_BY_USER_ID, (pk, current_user.id))
         else:
             # Insert new default record
             cur.execute(queries.INSERT_INTO_USER_DEFAULT_BUDGETS, (current_user.id, selected_budget_id))
@@ -55,18 +56,17 @@ def budget_select_default():
 
     if request.method == 'POST':
         selected_budget_id = request.form.get('selected_budget')
-
         if not selected_budget_id:
             return "No budget selected", 400
 
         # Check if the user already has a default budget
         cur.execute(queries.GET_DEFAULT_BUDGET_BY_USER_ID, (current_user.id,))
         
-        existing = cur.fetchone()
+        existing = cur.fetchone()[0]
 
         if existing:
             # Update existing record
-            cur.execute(queries.UPDATE_USER_DEFAULT_BUDGET_BY_USER_ID, (selected_budget_id, existing))
+            cur.execute(queries.UPDATE_USER_DEFAULT_BUDGET_BY_USER_ID, (selected_budget_id, current_user.id))
         else:
             # Insert new default record
             cur.execute(queries.INSERT_INTO_USER_DEFAULT_BUDGETS, (current_user.id, selected_budget_id))
@@ -97,11 +97,11 @@ def budget_invite_users():
         
         # Get the id of the current budget
         cur.execute(queries.GET_DEFAULT_BUDGET_BY_USER_ID, (current_user.id,))
-        current_budget = cur.fetchone()
+        current_budget = cur.fetchone()[0]
 
         # Check if the selected user already has a default budget
         cur.execute(queries.GET_DEFAULT_BUDGET_BY_USER_ID, (selected_user_id,))
-        existing = cur.fetchone()
+        existing = cur.fetchone()[0]
 
         if existing != None:
             # Update existing record
@@ -122,7 +122,7 @@ def budget_invite_users():
     # GET request – show user selection
     # Get the id of the current budget
     cur.execute(queries.GET_DEFAULT_BUDGET_BY_USER_ID, (current_user.id,))
-    current_budget = cur.fetchone()
+    current_budget = cur.fetchone()[0]
 
     cur.execute(queries.GET_USERS_NOT_ALREADY_IN_BUDGET_USERS_BY_USER_ID, (current_user.id,current_budget))
     users = cur.fetchall()
@@ -139,7 +139,7 @@ def budget_settings():
     #check for default budget
     cur.execute(queries.GET_DEFAULT_BUDGET_BY_USER_ID, (current_user.id,))
     
-    existing = cur.fetchone()
+    existing = cur.fetchone()[0]
 
     if existing:
         return render_template('budget_settings.html')
