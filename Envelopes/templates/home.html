@@ -4,10 +4,10 @@
     <h1 class="budget-home-title">Welcome, {{ user.name }}</h1>
 
     <div class="btn-group">
-        {{ nav.budget_home(budget_id) }}
+        {{ nav.budgets_home(budget_id) }}
     </div>
     <div class="btn-group2">
-        <a href="{{ url_for('logout_route') }}" class="btn">Logout</a>
+        {{ nav.logout() }}
     </div>
 </div>
 {% endblock %}

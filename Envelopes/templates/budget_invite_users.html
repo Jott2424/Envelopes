@@ -1,8 +1,10 @@
+{% import "nav_macros.html" as nav %}
 {% block content %}
 <body>
     <h1>User Selection</h1>
+
     {% if users %}
-        <form method="POST" action="{{ url_for('budget_invite_users_route') }}">
+        {% call nav.budget_invite_users_form(budget_id) %}
             <ul class="user-list">
                 {% for user in users %}
                     <li class="user-item">
@@ -13,10 +15,10 @@
             </ul>
 
             <button type="submit">Continue</button>
-        </form>
+        {% endcall %}
     {% else %}
         <p>You don't have any users to invite.
-            <a href="{{ url_for('home_route') }}">Home</a>.
+            {{ nav.budgets_home(budget_id) }}
         </p>
     {% endif %}
 </body>

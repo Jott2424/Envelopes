@@ -4,6 +4,7 @@ GET_BUDGET_BY_NAME = "SELECT pk_budgets_id FROM budgets WHERE name = %s"
 GET_USERS_BY_NAME = "SELECT pk_users_id, name, password FROM users WHERE name = %s"
 GET_DEFAULT_BUDGET_BY_USER_ID = "SELECT fk_budgets_id FROM user_default_budget WHERE fk_users_id = %s"
 GET_ENVELOPE_BY_NAME_AND_BUDGET_ID = "SELECT pk_envelopes_id FROM envelopes WHERE name = %s AND fk_budgets_id = %s"
+GET_USER_ALLOWED_BUDGETS_BY_USER_ID = "SELECT pk_budget_users_id FROM budget_users WHERE fk_users_id = %s"
 
 ########### Get With Join ###########
 GET_BUDGET_NAME_BY_BUDGET_USERS = "SELECT b.pk_budgets_id, b.name FROM budgets b JOIN budget_users bu ON b.pk_budgets_id = bu.fk_budgets_id WHERE bu.fk_users_id = %s"

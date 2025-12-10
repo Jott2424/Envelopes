@@ -74,20 +74,21 @@ def register_routes(app):
     def budget_select_default_route():
         return budget_routes.budget_select_default()
     
-    @app.route('/budget_invite_users', methods=['GET', 'POST'])
+    @app.route('/budget/<int:budget_id>/invite_users', methods=['GET', 'POST'])
     @login_required
-    def budget_invite_users_route():
-        return budget_routes.budget_invite_users()
+    def budget_invite_users_route(budget_id):
+        return budget_routes.budget_invite_users(budget_id)
 
-    @app.route('/budget_settings', methods=['GET', 'POST'])
+    @app.route('/budget/<int:budget_id>/settings', methods=['GET', 'POST'])
     @login_required
-    def budget_settings_route():
-        return budget_routes.budget_settings()
+    def budget_settings_route(budget_id):
+        return budget_routes.budget_settings(budget_id)
 
-    @app.route('/envelopes', methods=['GET', 'POST'])
+########################## BUDGET ##########################
+    @app.route('/budget/<int:budget_id>/envelopes', methods=['GET', 'POST'])
     @login_required
-    def envelopes_home_route():
-        return envelopes_routes.envelopes_home()
+    def envelopes_home_route(budget_id):
+        return envelopes_routes.envelopes_home(budget_id)
 
     @app.route('/envelopes_view', methods=['GET', 'POST'])
     @login_required

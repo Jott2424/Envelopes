@@ -3,7 +3,7 @@ from functions import db_utils, queries
 from flask import render_template, request, redirect, url_for, flash
 from flask_login import current_user
 
-def envelopes_home():
+def envelopes_home(budget_id):
     return render_template('envelopes_home.html')
 
 def envelopes_view():

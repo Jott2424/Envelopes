@@ -7,14 +7,10 @@ def budget_home(budget_id):
     conn = db_utils.get_db_connection()
     cur = conn.cursor()
 
-    # OPTIONAL: validate this budget belongs to the current user
-    cur.execute("""
-        SELECT pk_budgets_id 
-        FROM budgets_users 
-        WHERE fk_users_id = %s AND fk_budgets_id = %s
-    """, (current_user.id, budget_id))
+    #confirm this user has access to this budget
+    cur.execute(queries.GET_USER_ALLOWED_BUDGETS_BY_USER_ID, (current_user.id,))
 
-    authorized = cur.fetchone()
+    authorized = cur.fetchone()[0]
     if not authorized:
         return "Unauthorized", 403
 
@@ -92,7 +88,7 @@ def budget_select_default():
 
     return render_template('budget_select_default.html', budgets=budgets)
 
-def budget_invite_users():
+def budget_invite_users(budget_id):
     conn = db_utils.get_db_connection()
     cur = conn.cursor()
 
@@ -100,30 +96,29 @@ def budget_invite_users():
         selected_user_id = request.form.get('selected_user')
         if not selected_user_id:
             return "No user selected", 400
-        
-        # Get the id of the current budget
-        cur.execute(queries.GET_DEFAULT_BUDGET_BY_USER_ID, (current_user.id,))
-        current_budget = cur.fetchone()[0]
 
         # Check if the selected user already has a default budget
         cur.execute(queries.GET_DEFAULT_BUDGET_BY_USER_ID, (selected_user_id,))
-        existing = cur.fetchone()[0]
+        try:
+            existing = cur.fetchone()[0]
+        except:
+            existing = None
 
         if existing != None:
             # Update existing record
-            cur.execute(queries.UPDATE_USER_DEFAULT_BUDGET_BY_USER_ID, (selected_budget_id, selected_user_id))
+            cur.execute(queries.UPDATE_USER_DEFAULT_BUDGET_BY_USER_ID, (budget_id, selected_user_id))
         else:
             # Insert new default record
-            cur.execute(queries.INSERT_INTO_USER_DEFAULT_BUDGETS, (selected_user_id, current_budget))
+            cur.execute(queries.INSERT_INTO_USER_DEFAULT_BUDGETS, (selected_user_id, budget_id))
         
         #insert user to allowed budgets table
-        cur.execute(queries.INSERT_INTO_USER_DEFAULT_BUDGETS, (current_budget, selected_user_id))
+        cur.execute(queries.INSERT_INTO_USER_DEFAULT_BUDGETS, (budget_id, selected_user_id))
 
         conn.commit()
         cur.close()
         conn.close()
 
-        return redirect(url_for('budget_home_route'))
+        return redirect(url_for('budget_home_route', budget_id = budget_id))
 
     # GET request – show user selection
     # Get the id of the current budget
@@ -136,18 +131,16 @@ def budget_invite_users():
     cur.close()
     conn.close()
 
-    return render_template('budget_invite_users.html', users=users)
+    return render_template('budget_invite_users.html', users=users, budget_id=budget_id)
 
-def budget_settings():
+def budget_settings(budget_id):
     conn = db_utils.get_db_connection()
     cur = conn.cursor()
 
     #check for default budget
-    cur.execute(queries.GET_DEFAULT_BUDGET_BY_USER_ID, (current_user.id,))
-    
-    existing = cur.fetchone()[0]
+    default_budget = budget_id
 
-    if existing:
-        return render_template('budget_settings.html')
+    if default_budget:
+        return render_template('budget_settings.html', budget_id = budget_id)
     else:
         return render_template('budget_select_default.html')

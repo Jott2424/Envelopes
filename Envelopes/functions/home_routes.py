@@ -15,7 +15,7 @@ def home():
     cur.close()
     conn.close()
 
-    if not default_budget:
+    if default_budget == None or not default_budget:
         # No budgets found, redirect or prompt
         return redirect(url_for('getting_started_create_budget_route'))
 
