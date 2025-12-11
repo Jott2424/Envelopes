@@ -4,10 +4,10 @@
     <h1 class="budget-settings-title">Budget Settings</h1>
 
     <div class="btn-group">
-        {{ nav.budgets_create() }}
+        {{ nav.budget_create(budget_id) }}
     </div>
     <div class="btn-group">
-        <a href="{{ url_for('budget_select_default_route') }}" class="btn">Select A New Default Budget</a>
+        {{ nav.budget_select_default(budget_id) }}
     </div>
     <div class="btn-group">
         {{ nav.budgets_invite_users(budget_id) }}

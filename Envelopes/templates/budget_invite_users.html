@@ -4,7 +4,7 @@
     <h1>User Selection</h1>
 
     {% if users %}
-        {% call nav.budget_invite_users_form(budget_id) %}
+        {% call nav.budget_invite_users_post(budget_id) %}
             <ul class="user-list">
                 {% for user in users %}
                     <li class="user-item">

@@ -1,8 +1,10 @@
+{% import "nav_macros.html" as nav %}
 {% block content %}
 <body>
     <h1>Budget Selection</h1>
+
     {% if budgets %}
-        <form method="POST" action="{{ url_for('budget_select_default_route') }}">
+        {% call nav.budget_select_default_post(budget_id) %}
             <ul class="budget-list">
                 {% for budget in budgets %}
                     <li class="budget-item">
@@ -13,10 +15,10 @@
             </ul>
 
             <button type="submit">Continue</button>
-        </form>
+        {% endcall %}
     {% else %}
         <p>You don't have any budgets yet.
-            <a href="{{ url_for('budget_create_route') }}">Create one now</a>.
+            {{ nav.budget_create(budget_id) }}
         </p>
     {% endif %}
 </body>

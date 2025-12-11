@@ -6,8 +6,8 @@
     <a href="{{ url_for('budget_home_route', budget_id=budget_id) }}">Budget Home</a>
 {% endmacro %}
 
-{% macro budgets_create(budget_id) %}
-    <a href="{{ url_for('budget_create_route') }}">Create A Budget</a>
+{% macro budget_create(budget_id) %}
+    <a href="{{ url_for('budget_create_route', budget_id=budget_id) }}">Create A Budget</a>
 {% endmacro %}
 
 {% macro budget_settings(budget_id) %}
@@ -18,10 +18,20 @@
     <a href="{{ url_for('budget_invite_users_route', budget_id=budget_id) }}">Invite A User</a>
 {% endmacro %}
 
-{% macro budget_invite_users_form(budget_id) %}
+{% macro budget_invite_users_post(budget_id) %}
 <form method="POST" action="{{ url_for('budget_invite_users_route', budget_id=budget_id) }}">
     {{ caller() }}
 </form>
+{% endmacro %}
+
+{% macro budget_select_default(budget_id) %}
+    <a href="{{ url_for('budget_select_default_route', budget_id=budget_id) }}">Select A New Default Budget</a>
+{% endmacro %}
+
+{% macro budget_select_default_post(budget_id) %}
+    <form method="POST" action="{{ url_for('budget_select_default_route', budget_id=budget_id) }}">
+        {{ caller() }}
+    </form>
 {% endmacro %}
 
 

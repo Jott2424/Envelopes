@@ -19,7 +19,7 @@ def budget_home(budget_id):
     # pass budget_id into template
     return render_template('budget_home.html', budget_id=budget_id)
 
-def budget_create():
+def budget_create(budget_id):
     if request.method == 'POST':
         budget_name = request.form.get('budget_name')
         
@@ -50,13 +50,14 @@ def budget_create():
         conn.close()
 
         return redirect(url_for('home_route'))
-    return render_template('budget_create.html')
+    return render_template('budget_create.html', budget_id=budget_id)
 
-def budget_select_default():
+def budget_select_default(budget_id):
     conn = db_utils.get_db_connection()
     cur = conn.cursor()
 
     if request.method == 'POST':
+        print('post!')
         selected_budget_id = request.form.get('selected_budget')
         if not selected_budget_id:
             return "No budget selected", 400
@@ -77,7 +78,7 @@ def budget_select_default():
         cur.close()
         conn.close()
 
-        return redirect(url_for('budget_home_route'))
+        return redirect(url_for('budget_home_route', budget_id = selected_budget_id))
 
     # GET request – show budget selection
     cur.execute(queries.GET_BUDGET_NAME_BY_BUDGET_USERS, (current_user.id,))
@@ -86,7 +87,7 @@ def budget_select_default():
     cur.close()
     conn.close()
 
-    return render_template('budget_select_default.html', budgets=budgets)
+    return render_template('budget_select_default.html', budgets=budgets, budget_id=budget_id)
 
 def budget_invite_users(budget_id):
     conn = db_utils.get_db_connection()
@@ -112,7 +113,7 @@ def budget_invite_users(budget_id):
             cur.execute(queries.INSERT_INTO_USER_DEFAULT_BUDGETS, (selected_user_id, budget_id))
         
         #insert user to allowed budgets table
-        cur.execute(queries.INSERT_INTO_USER_DEFAULT_BUDGETS, (budget_id, selected_user_id))
+        cur.execute(queries.INSERT_INTO_BUDGET_USERS, (budget_id, selected_user_id))
 
         conn.commit()
         cur.close()
