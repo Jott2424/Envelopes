@@ -1,1 +1,118 @@
-print(hi)
+{% import "nav_macros.html" as nav %}
+{% block content %}
+
+<h1>Edit Envelope</h1>
+
+<div class="container">
+    <form method="POST" id="envelope-form">
+
+        <!-- Envelope Name -->
+        <label for="Name">Envelope Name</label>
+        <input 
+            id="Name" 
+            name="envelope_name" 
+            type="text"
+            value="{{ fields[0].envelope_name }}"
+            style="width:250px;"
+        >
+
+        <hr>
+
+        <h3>Edit What This Envelope Tracks</h3>
+
+        <div id="trackers-container">
+
+            {% for field in fields %}
+            <div class="tracker-row"
+                 data-id="{{ field.id }}"
+                 style="margin-bottom:10px; display:flex; gap:10px; align-items:center;">
+
+                <!-- Field name -->
+                <input 
+                    type="text" 
+                    name="trackers[]" 
+                    value="{{ field.field_name }}" 
+                    style="width:200px;"
+                >
+
+                <!-- Type -->
+                <select name="types[]">
+                    <option value="text" {% if field.field_type == 'text' %}selected{% endif %}>Text</option>
+                    <option value="numeric(10,2)" {% if field.field_type == 'numeric(10,2)' %}selected{% endif %}>Numeric(10,2)</option>
+                    <option value="date" {% if field.field_type == 'date' %}selected{% endif %}>Date</option>
+                </select>
+
+                <!-- Required checkbox -->
+                <label>
+                    <input 
+                        type="checkbox" 
+                        name="required[]" 
+                        value="{{ loop.index0 }}"
+                        {% if field.is_required %}checked{% endif %}
+                    >
+                    Required
+                </label>
+
+                <!-- Remove button -->
+                <button 
+                    type="button" 
+                    class="remove-tracker"
+                    style="background:red; color:white; border:none; padding:4px 8px; cursor:pointer;"
+                >–</button>
+
+            </div>
+            {% endfor %}
+
+        </div>
+
+        <button type="button" id="add-tracker">+ Add Another</button>
+        <button type="submit">Save Changes</button>
+        
+        {{ nav.envelope_edit_delete(budget_id, envelope_id) }}
+
+    </form>
+</div>
+
+<script>
+let trackerCount = {{ fields|length }};
+
+// Add new tracker row
+document.getElementById("add-tracker").addEventListener("click", function() {
+    trackerCount++;
+
+    const container = document.getElementById("trackers-container");
+
+    const div = document.createElement("div");
+    div.classList.add("tracker-row");
+    div.style = "margin-bottom:10px; display:flex; gap:10px; align-items:center;";
+
+    div.innerHTML = `
+        <input type="text" name="trackers[]" placeholder="Tracker ${trackerCount}" style="width:200px;">
+        <select name="types[]">
+            <option value="text">Text</option>
+            <option value="numeric(10,2)">Numeric(10,2)</option>
+            <option value="date">Date</option>
+        </select>
+        <label>
+            <input type="checkbox" name="required[]" value="${trackerCount - 1}">
+            Required
+        </label>
+        <button type="button" class="remove-tracker" style="background:red; color:white; border:none; padding:4px 8px; cursor:pointer;">–</button>
+    `;
+
+    container.appendChild(div);
+});
+
+// Remove tracker rows
+document.addEventListener("click", function(e) {
+    if (e.target.classList.contains("remove-tracker")) {
+        e.target.parentElement.remove();
+    }
+});
+</script>
+
+<div class="btn-group2">
+  {{ nav.envelopes_home(budget_id) }}
+</div>
+
+{% endblock %}

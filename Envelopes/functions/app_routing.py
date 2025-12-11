@@ -89,20 +89,25 @@ def register_routes(app):
     def envelopes_home_route(budget_id):
         return envelopes_routes.envelopes_home(budget_id)
 
-    @app.route('/envelopes_view', methods=['GET', 'POST'])
+    @app.route('/budget/<int:budget_id>/envelopes/view', methods=['GET', 'POST'])
     @login_required
-    def envelopes_view_route():
-        return envelopes_routes.envelopes_view()
+    def envelopes_view_route(budget_id):
+        return envelopes_routes.envelopes_view(budget_id)
     
-    @app.route('/envelopes_create', methods=['GET', 'POST'])
+    @app.route('/budget/<int:budget_id>/envelope/create', methods=['GET', 'POST'])
     @login_required
-    def envelopes_create_route():
-        return envelopes_routes.envelopes_create()
+    def envelopes_create_route(budget_id):
+        return envelopes_routes.envelopes_create(budget_id)
 
-    @app.route('/envelopes_edit', methods=['GET', 'POST'])
+    @app.route('/budget/<int:budget_id>/envelope/<int:envelope_id>/edit', methods=['GET', 'POST'])
     @login_required
-    def envelopes_edit_route():
-        return envelopes_routes.envelopes_edit()
+    def envelopes_edit_route(budget_id,envelope_id):
+        return envelopes_routes.envelopes_edit(budget_id,envelope_id)
+
+    @app.route('/budget/<int:budget_id>/envelope/<int:envelope_id>/delete', methods=['POST'])
+    @login_required
+    def envelopes_delete_route(budget_id, envelope_id):
+        return envelopes_routes.envelopes_delete(budget_id,envelope_id)
 
 
 #     @app.route('/logtransaction', methods=['GET', 'POST'])

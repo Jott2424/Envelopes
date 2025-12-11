@@ -1,19 +1,20 @@
+{% import "nav_macros.html" as nav %}
 {% block content %}
 <div class="budget-home-container">
     <h1 class="budget-home-title">Envelopes</h1>
 
     <div class="btn-group">
-        <a href="{{ url_for('envelopes_view_route') }}" class="btn">View Envelopes</a>
+        {{ nav.envelopes_view(budget_id) }}
     </div>
     <div class="btn-group">
-        <a href="{{ url_for('envelopes_create_route') }}" class="btn">Create A New Envelope</a>
+        {{ nav.envelope_create(budget_id) }}
     </div>
 
     <div class="btn-group2">
-        <a href="{{ url_for('home_route') }}" class="btn">Home</a>
+        {{ nav.budgets_home(budget_id) }}
     </div>
     <div class="btn-group2">
-        <a href="{{ url_for('logout_route') }}" class="btn">Logout</a>
+        {{ nav.home() }}
     </div>
 </div>
 {% endblock %}

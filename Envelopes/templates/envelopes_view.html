@@ -1,15 +1,11 @@
+{% import "nav_macros.html" as nav %}
 {% block content %}
     {% if envelopes %}
         {% for envelope_name, data in envelopes.items() %}
-
             <h3>
                 {{ envelope_name }}
-                <a class="btn btn-small" 
-                   href="{{ url_for('envelopes_edit_route', envelope_id=data.id) }}">
-                    Edit
-                </a>
+                {{ nav.envelope_edit(budget_id, data.id) }}
             </h3>
-
             <table border="1">
                 <tbody>
                     {% for detail in data.details %}
@@ -27,10 +23,10 @@
     {% endif %}
 
     <div class="btn-group2">
-        <a href="{{ url_for('envelopes_home_route') }}" class="btn">Envelopes Home</a>
+        {{ nav.envelopes_home(budget_id) }}
     </div>
 
     <div class="btn-group2">
-        <a href="{{ url_for('logout_route') }}" class="btn">Logout</a>
+        {{ nav.logout() }}
     </div>
 {% endblock %}

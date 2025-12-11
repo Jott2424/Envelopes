@@ -111,6 +111,7 @@ def first_time_init_db():
             pk_envelope_transactions_id SERIAL PRIMARY KEY,
             fk_receipts_id INTEGER REFERENCES receipts(pk_receipts_id),
             fk_envelopes_id INTEGER REFERENCES envelopes(pk_envelopes_id),
+            fk_budgets_id INTEGER REFERENCES budgets(pk_budgets_id),
             envelope_transaction_type TEXT NOT NULL,
             amount NUMERIC(10,2) NOT NULL,
             value TEXT NOT NULL

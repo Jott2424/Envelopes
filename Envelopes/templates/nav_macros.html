@@ -2,6 +2,11 @@
     <a href="{{ url_for('home_route') }}">Home</a>
 {% endmacro %}
 
+{% macro logout() %}
+    <a href="{{ url_for('logout_route') }}">Logout</a>
+{% endmacro %}
+
+
 {% macro budgets_home(budget_id) %}
     <a href="{{ url_for('budget_home_route', budget_id=budget_id) }}">Budget Home</a>
 {% endmacro %}
@@ -36,11 +41,30 @@
 
 
 
-
 {% macro envelopes_home(budget_id) %}
-    <a href="{{ url_for('envelopes_home_route', budget_id=budget_id) }}">Envelopes</a>
+    <a href="{{ url_for('envelopes_home_route', budget_id=budget_id) }}">Envelopes Home</a>
 {% endmacro %}
 
-{% macro logout() %}
-    <a href="{{ url_for('logout_route') }}">Logout</a>
+{% macro envelopes_view(budget_id) %}
+    <a href="{{ url_for('envelopes_view_route', budget_id=budget_id) }}">View Envelopes</a>
+{% endmacro %}
+
+{% macro envelope_create(budget_id) %}
+    <a href="{{ url_for('envelopes_create_route', budget_id=budget_id) }}">Create An Envelope</a>
+{% endmacro %}
+
+{% macro envelope_edit(budget_id, envelope_id) %}
+<a class="btn btn-small" href="{{ url_for('envelopes_edit_route', budget_id=budget_id, envelope_id=envelope_id) }}">Edit</a>
+{% endmacro %}
+
+{% macro envelope_edit_delete(budget_id, envelope_id) %}
+    <button 
+        type="submit" 
+        name="delete_envelope" 
+        value="1"
+        style="background:red; color:white; margin-top:20px;"
+        onclick="return confirm('Are you sure you want to delete this envelope? This cannot be undone.');"
+    >
+        Delete Envelope
+    </button>
 {% endmacro %}
