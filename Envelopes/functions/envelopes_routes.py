@@ -31,7 +31,6 @@ def envelopes_view(budget_id):
     
     return render_template('envelopes_view.html', envelopes=envelopes, budget_id=budget_id)
 
-
 def envelopes_create(budget_id):
     if request.method == 'POST':
         name = request.form.get('envelope_name')
@@ -39,39 +38,39 @@ def envelopes_create(budget_id):
         conn = db_utils.get_db_connection()
         cur = conn.cursor()
 
-        #check if there is already an envelope in this budget with this name
-        cur.execute(queries.GET_ENVELOPE_BY_NAME_AND_BUDGET_ID, (name,budget_id))
+        # Check if an envelope with this name already exists in this budget
+        cur.execute(queries.GET_ENVELOPE_BY_NAME_AND_BUDGET_ID, (name, budget_id))
         exists = cur.fetchone()
         
-        # if not then insert
-        if exists == None:
-            cur.execute(queries.INSERT_INTO_ENVELOPES_RETURN_PK, (budget_id,name))
-            pk_id = cur.fetchone()[0]
+        if exists is None:
+            # Insert new envelope
+            cur.execute(queries.INSERT_INTO_ENVELOPES_RETURN_PK, (budget_id, name))
+            pk_envelope_id = cur.fetchone()[0]
 
-            #insert this envelope's columns into the column tracking table
+            # Insert envelope transaction fields
             trackers = request.form.getlist('trackers[]')
             types = request.form.getlist('types[]')
             required_indices = request.form.getlist('required[]')
-            required_indices = [i for i in required_indices]
+            required_indices = [int(i) for i in required_indices]  # cast to int
 
-            form_order_counter = 1
-            for idx, (t_name, t_type) in enumerate(zip(trackers, types)):
-                print(idx)
+            for idx, (t_name, t_type) in enumerate(zip(trackers, types), start=0):
                 is_required = idx in required_indices
-                cur.execute(queries.INSERT_INTO_ENVELOPE_TRANSACTION_FIELDS, (budget_id,pk_id,form_order_counter,t_name,t_type,is_required))
-                #increase the form order value
-                form_order_counter+=1
-            
+                cur.execute(queries.INSERT_INTO_ENVELOPE_TRANSACTION_FIELDS,(pk_envelope_id, idx + 1, t_name, t_type, is_required))
+
             conn.commit()
             cur.close()
             conn.close()
-        else:
-            flash(f"{name} envelope already exists")
-            return redirect(url_for("envelopes_create_route", budget_id=budget_id))
-        return redirect(url_for("envelopes_home_route", budget_id=budget_id))
 
-    # Initial page load
-    return render_template("envelopes_create.html", num_trackers=1, budget_id=budget_id)
+            return redirect(url_for("envelopes_home_route", budget_id=budget_id))
+        else:
+            flash(f"Envelope '{name}' already exists in this budget.")
+            cur.close()
+            conn.close()
+            return redirect(url_for("envelopes_create_route", budget_id=budget_id))
+
+    # GET request: initial page load
+    return render_template("envelopes_create.html", budget_id=budget_id)
+
 
 def envelopes_edit(budget_id, envelope_id):
     if request.method == "GET":
@@ -116,22 +115,22 @@ def envelopes_edit(budget_id, envelope_id):
             conn = db_utils.get_db_connection()
             cur = conn.cursor()
 
-            # Delete all fields
+            # Delete transactions
             cur.execute(
-                queries.DROP_FROM_ENVELOPE_TRANSACTION_FIELDS_BY_BUDGETS_AND_ENVELOPES_ID,
-                (budget_id, envelope_id)
+                queries.DROP_FROM_TRANSACTIONS_BY_ENVELOPES_ID,
+                (envelope_id,)
             )
 
-            # Delete transactions (if you track them)
+            # Delete all fields
             cur.execute(
-                queries.DROP_FROM_TRANSACTIONS_BY_BUDGETS_AND_ENVELOPES_ID,
-                (envelope_id, budget_id)
+                queries.DROP_FROM_ENVELOPE_TRANSACTION_FIELDS_BY_ENVELOPES_ID,
+                (envelope_id,)
             )
 
             # Delete envelope itself
             cur.execute(
-                queries.DROP_FROM_ENVELOPES_BY_BUDGETS_AND_ENVELOPES_ID,
-                (envelope_id, budget_id)
+                queries.DROP_FROM_ENVELOPES_BY_ENVELOPES_ID,
+                (envelope_id,)
             )
 
             conn.commit()
@@ -160,8 +159,8 @@ def envelopes_edit(budget_id, envelope_id):
 
         # Delete all old fields
         cur.execute(
-            queries.DROP_FROM_ENVELOPE_TRANSACTION_FIELDS_BY_BUDGETS_AND_ENVELOPES_ID,
-            (budget_id, envelope_id)
+            queries.DROP_FROM_ENVELOPE_TRANSACTION_FIELDS_BY_ENVELOPES_ID,
+            (envelope_id,)
         )
 
         # Insert each new field
@@ -172,7 +171,7 @@ def envelopes_edit(budget_id, envelope_id):
 
             cur.execute(
                 queries.INSERT_INTO_ENVELOPE_TRANSACTION_FIELDS,
-                (budget_id, envelope_id, i, field_name, field_type, is_required)
+                (envelope_id, i, field_name, field_type, is_required)
             )
 
         conn.commit()
