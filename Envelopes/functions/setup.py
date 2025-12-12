@@ -67,8 +67,10 @@ def first_time_init_db():
     cur.execute('''
         CREATE TABLE IF NOT EXISTS receipts (
             pk_receipts_id SERIAL PRIMARY KEY,
+            fk_budgets_id INTEGER REFERENCES budgets(pk_budgets_id),
             fk_users_id INTEGER REFERENCES users(pk_users_id),
-            fk_payment_sources_id INTEGER REFERENCES payment_sources(pk_payment_sources_id)
+            fk_payment_sources_id INTEGER REFERENCES payment_sources(pk_payment_sources_id),
+            debit_or_credit TEXT NOT NULL
         );
     ''')
     #a receipt can have multiple envelope deductions (transactions)

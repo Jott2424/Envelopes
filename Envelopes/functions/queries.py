@@ -24,12 +24,15 @@ INSERT_INTO_ENVELOPE_TRANSACTION_FIELDS = "INSERT INTO envelope_transaction_fiel
 INSERT_INTO_USER_DEFAULT_BUDGETS = "INSERT INTO user_default_budget (fk_users_id, fk_budgets_id) VALUES (%s, %s)"
 INSERT_INTO_BUDGET_USERS = "INSERT INTO budget_users (fk_budgets_id, fk_users_id) VALUES (%s, %s)"
 INSERT_INTO_PAYMENT_SOURCES = "INSERT INTO payment_sources (fk_budgets_id, name) VALUES (%s, %s)"
+INSERT_INTO_RECEIPTS = "INSERT INTO receipts (fk_users_id, fk_payment_sources_id) VALUES (%s, %s)"
+INSERT_INTO_TRANSACTIONS = "INSERT INTO transactions (fk_receipts_id, fk_envelopes_id, details) VALUES (%s, %s, %s)"
 
 ########### Put With Return ###########
 INSERT_INTO_USERS_RETURN_PK = "INSERT INTO users (name, password) VALUES (%s, %s) RETURNING pk_users_id"
 INSERT_INTO_BUDGETS_RETURN_PK = "INSERT INTO budgets (name) VALUES (%s) RETURNING pk_budgets_id"
 INSERT_INTO_ENVELOPES_RETURN_PK = "INSERT INTO envelopes (fk_budgets_id, name) VALUES (%s, %s) RETURNING pk_envelopes_id"
 INSERT_INTO_PAYMENT_SOURCES_RETURN_PK = "INSERT INTO payment_sources (fk_budgets_id, name) VALUES (%s, %s) RETURNING pk_payment_sources_id"
+INSERT_INTO_RECEIPTS_RETURN_PK = "INSERT INTO receipts (fk_budgets_id, fk_users_id, fk_payment_sources_id, debit_or_credit) VALUES (%s, %s, %s, %s) RETURNING pk_receipts_id"
 
 ########### PATCH ###########
 UPDATE_USER_DEFAULT_BUDGET_BY_USER_ID = "UPDATE user_default_budget SET fk_budgets_id = %s WHERE fk_users_id = %s"
