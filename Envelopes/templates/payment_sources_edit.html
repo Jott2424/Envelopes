@@ -1,0 +1,31 @@
+{% import "nav_macros.html" as nav %}
+{% block content %}
+    <h1>Edit Payment Source</h1>
+
+    <form method="POST">
+        <table border="1">
+            <tr>
+                <td>ID</td>
+                <td>{{ payment_source[0] }}</td>
+            </tr>
+            <tr>
+                <td>Name</td>
+                <td>
+                    <input type="text" name="name" value="{{ payment_source[1] }}" required>
+                </td>
+            </tr>
+        </table>
+
+        <div class="btn-group2">
+            <button type="submit" class="btn">Save</button>
+            <button type="submit" name="delete" value="1" class="btn" style="background-color: #c0392b;">
+                Delete
+            </button>
+            {{ nav.payment_sources_home(budget_id) }}
+        </div>
+    </form>
+
+    <div class="btn-group2">
+        {{ nav.logout() }}
+    </div>
+{% endblock %}

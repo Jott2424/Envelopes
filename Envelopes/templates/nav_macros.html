@@ -83,20 +83,32 @@
     <a href="{{ url_for('receipts_create_route', budget_id=budget_id) }}">Create Receipt</a>
 {% endmacro %}
 
+{% macro receipts_edit(budget_id) %}
+    <a href="{{ url_for('receipts_edit_route', budget_id=budget_id) }}">Edit Receipt</a>
+{% endmacro %}
+
+{% macro receipts_delete(budget_id) %}
+    <a href="{{ url_for('receipts_delete_route', budget_id=budget_id) }}">Delete Receipt</a>
+{% endmacro %}
+
 
 
 {% macro payment_sources_home(budget_id) %}
     <a href="{{ url_for('payment_sources_home_route', budget_id=budget_id) }}">Payment Sources</a>
 {% endmacro %}
 
-{% macro payment_sources_view(budget_id) %}
-    <a href="{{ url_for('payment_sources_view_route', budget_id=budget_id) }}">View Payment Sources</a>
+{% macro payment_sources_view(budget_id, payment_sources) %}
+    <a href="{{ url_for('payment_sources_view_route', budget_id=budget_id, payment_sources=payment_sources) }}">View Payment Sources</a>
 {% endmacro %}
 
 {% macro payment_sources_create(budget_id) %}
     <a href="{{ url_for('payment_sources_create_route', budget_id=budget_id) }}">Create Payment Sources</a>
 {% endmacro %}
 
-{% macro payment_sources_edit(budget_id) %}
-    <a href="{{ url_for('payment_sources_edit_route', budget_id=budget_id) }}">Edit Payment Source</a>
+{% macro payment_sources_edit(budget_id, payment_source_id) %}
+    <a href="{{ url_for('payment_sources_edit_route', budget_id=budget_id, payment_source_id=payment_source_id) }}">Edit Payment Source</a>
+{% endmacro %}
+
+{% macro payment_sources_delete(budget_id) %}
+    <a href="{{ url_for('payment_sources_delete_route', budget_id=budget_id) }}">Delete Payment Source</a>
 {% endmacro %}

@@ -6,6 +6,9 @@ GET_DEFAULT_BUDGET_BY_USER_ID = "SELECT fk_budgets_id FROM user_default_budget W
 GET_ENVELOPE_BY_NAME_AND_BUDGET_ID = "SELECT pk_envelopes_id FROM envelopes WHERE name = %s AND fk_budgets_id = %s"
 GET_USER_ALLOWED_BUDGETS_BY_USER_ID = "SELECT pk_budget_users_id FROM budget_users WHERE fk_users_id = %s"
 GET_ENVELOPE_TRANSACTION_FIELDS_BY_BUDGET_AND_ENVELOPE_ID = "SELECT pk_envelope_transaction_fields_id, fk_budgets_id, fk_envelopes_id, form_order, field_name, field_type, is_required FROM envelope_transaction_fields WHERE fk_budgets_id = %s and fk_envelopes_id = %s"
+GET_PAYMENT_SOURCES_BY_BUDGET_ID = "SELECT pk_payment_sources_id, name FROM payment_sources WHERE fk_budgets_id = %s"
+GET_PAYMENT_SOURCES_BY_BUDGET_ID_AND_NAME = "SELECT pk_payment_sources_id, name FROM payment_sources WHERE fk_budgets_id = %s AND name = %s"
+GET_PAYMENT_SOURCE_BY_PAYMENT_SOURCE_ID = "SELECT pk_payment_sources_id, name FROM payment_sources WHERE pk_payment_sources_id = %s"
 
 ########### Get With Join ###########
 GET_BUDGET_NAME_BY_BUDGET_USERS = "SELECT b.pk_budgets_id, b.name FROM budgets b JOIN budget_users bu ON b.pk_budgets_id = bu.fk_budgets_id WHERE bu.fk_users_id = %s"
@@ -20,18 +23,24 @@ INSERT_INTO_BUDGETS   = "INSERT INTO budgets (name) VALUES (%s)"
 INSERT_INTO_ENVELOPE_TRANSACTION_FIELDS = "INSERT INTO envelope_transaction_fields (fk_envelopes_id, form_order, field_name, field_type, is_required) VALUES (%s,%s,%s,%s,%s)"
 INSERT_INTO_USER_DEFAULT_BUDGETS = "INSERT INTO user_default_budget (fk_users_id, fk_budgets_id) VALUES (%s, %s)"
 INSERT_INTO_BUDGET_USERS = "INSERT INTO budget_users (fk_budgets_id, fk_users_id) VALUES (%s, %s)"
+INSERT_INTO_PAYMENT_SOURCES = "INSERT INTO payment_sources (fk_budgets_id, name) VALUES (%s, %s)"
 
 ########### Put With Return ###########
 INSERT_INTO_USERS_RETURN_PK = "INSERT INTO users (name, password) VALUES (%s, %s) RETURNING pk_users_id"
 INSERT_INTO_BUDGETS_RETURN_PK = "INSERT INTO budgets (name) VALUES (%s) RETURNING pk_budgets_id"
 INSERT_INTO_ENVELOPES_RETURN_PK = "INSERT INTO envelopes (fk_budgets_id, name) VALUES (%s, %s) RETURNING pk_envelopes_id"
+INSERT_INTO_PAYMENT_SOURCES_RETURN_PK = "INSERT INTO payment_sources (fk_budgets_id, name) VALUES (%s, %s) RETURNING pk_payment_sources_id"
 
 ########### PATCH ###########
 UPDATE_USER_DEFAULT_BUDGET_BY_USER_ID = "UPDATE user_default_budget SET fk_budgets_id = %s WHERE fk_users_id = %s"
 UPDATE_ENVELOPES_BY_ENVELOPES_ID = "UPDATE envelopes SET name = %s WHERE pk_envelopes_id = %s"
+UPDATE_PAYMENT_SOURCES_BY_PAYMENT_SOURCE_ID = "UPDATE payment_sources SET name = %s WHERE pk_payment_sources_id = %s"
 
 ########### DROP ###########
 DROP_FROM_ENVELOPE_TRANSACTION_FIELDS_BY_ENVELOPES_ID = "DELETE FROM envelope_transaction_fields WHERE fk_envelopes_id = %s"
 DROP_FROM_ENVELOPES_BY_ENVELOPES_ID = "DELETE FROM envelopes WHERE pk_envelopes_id = %s"
 DROP_FROM_TRANSACTIONS_BY_ENVELOPES_ID = "DELETE FROM transactions WHERE fk_envelopes_id = %s"
 DROP_FROM_RECEIPTS_BY_ENVELOPES_ID = "DELETE FROM receipts WHERE fk_envelopes_id = %s"
+DROP_FROM_PAYMENT_SOURCES_BY_PAYMENT_SOURCES_ID = "DELETE FROM payment_sources WHERE pk_payment_sources_id = %s"
+DROP_FROM_TRANSACTIONS_BY_PAYMENT_SOURCES_ID = "DELETE FROM transactions WHERE fk_receipts_id IN (SELECT pk_receipts_id FROM receipts WHERE fk_payment_source_id = %s)"
+DROP_FROM_RECEIPTS_BY_PAYMENT_SOURCES_ID = "DELETE FROM receipts WHERE fk_payment_source_id = %s"

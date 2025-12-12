@@ -1,0 +1,37 @@
+{% import "nav_macros.html" as nav %}
+{% block content %}
+    <h1>Payment Sources</h1>
+
+    {% if payment_sources %}
+        <table border="1">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for source in payment_sources %}
+                    <tr>
+                        <td>{{ source[0] }}</td>
+                        <td>{{ source[1] }}</td>
+                        <td>
+                            {{ nav.payment_sources_edit(budget_id, source[0]) }}
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>No payment sources found for this budget.</p>
+    {% endif %}
+
+    <div class="btn-group2">
+        {{ nav.payment_sources_home(budget_id) }}
+    </div>
+
+    <div class="btn-group2">
+        {{ nav.logout() }}
+    </div>
+{% endblock %}
