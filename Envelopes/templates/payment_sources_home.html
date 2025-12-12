@@ -1,18 +1,14 @@
 {% import "nav_macros.html" as nav %}
 {% block content %}
-<div class="budget-home-container">
-    <h1 class="budget-home-title">Budget</h1>
+<div class="payment_source-home-container">
+    <h1 class="payment_source-home-title">Budget</h1>
 
     <div class="btn-group">
-        {{ nav.envelopes_home(budget_id) }}
+        {{ nav.payment_source_view(budget_id) }}
     </div>
 
     <div class="btn-group">
-        {{ nav.receipts_home(budget_id) }}
-    </div>
-
-    <div class="btn-group">
-        {{ nav.budget_settings(budget_id) }}
+        {{ nav.payment_source_create(budget_id) }}
     </div>
 
     <div class="btn-group2">

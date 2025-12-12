@@ -1,7 +1,7 @@
 # functions/app_routing.py
 import psycopg2
 from config import DB_HOST, DB_NAME, DB_USER, DB_PASS, DB_PORT
-from functions import auth_routes, db_utils, budget_routes, home_routes, getting_started_routes, envelopes_routes
+from functions import auth_routes, db_utils, budget_routes, home_routes, getting_started_routes, envelopes_routes, receipts_routes
 from classes.user import User
 
 from flask import render_template, redirect, url_for, request
@@ -94,20 +94,36 @@ def register_routes(app):
     def envelopes_view_route(budget_id):
         return envelopes_routes.envelopes_view(budget_id)
     
-    @app.route('/budget/<int:budget_id>/envelope/create', methods=['GET', 'POST'])
+    @app.route('/budget/<int:budget_id>/envelopes/create', methods=['GET', 'POST'])
     @login_required
     def envelopes_create_route(budget_id):
         return envelopes_routes.envelopes_create(budget_id)
 
-    @app.route('/budget/<int:budget_id>/envelope/<int:envelope_id>/edit', methods=['GET', 'POST'])
+    @app.route('/budget/<int:budget_id>/envelopes/<int:envelope_id>/edit', methods=['GET', 'POST'])
     @login_required
     def envelopes_edit_route(budget_id,envelope_id):
         return envelopes_routes.envelopes_edit(budget_id,envelope_id)
 
-    @app.route('/budget/<int:budget_id>/envelope/<int:envelope_id>/delete', methods=['POST'])
+    @app.route('/budget/<int:budget_id>/envelopes/<int:envelope_id>/delete', methods=['POST'])
     @login_required
     def envelopes_delete_route(budget_id, envelope_id):
         return envelopes_routes.envelopes_delete(budget_id,envelope_id)
+
+########################## RECEIPTS ##########################
+    @app.route('/budget/<int:budget_id>/receipts', methods=['GET', 'POST'])
+    @login_required
+    def receipts_home_route(budget_id):
+        return receipts_routes.receipts_home(budget_id)
+
+    @app.route('/budget/<int:budget_id>/receipts/view', methods=['GET', 'POST'])
+    @login_required
+    def receipts_view_route(budget_id):
+        return receipts_routes.receipts_view(budget_id)
+
+    @app.route('/budget/<int:budget_id>/receipts/create', methods=['GET', 'POST'])
+    @login_required
+    def receipts_create_route(budget_id):
+        return receipts_routes.receipts_create(budget_id)
 
 
 #     @app.route('/logtransaction', methods=['GET', 'POST'])

@@ -1,0 +1,12 @@
+{% import "nav_macros.html" as nav %}
+{% block content %}
+<h1 class="getting-started-title">Create A Payment Source!</h1>
+<div class="container">
+    <form method="POST">
+        <label for="Name">Payment Source Name</label>
+        <textarea id="Name" name="payment_source_name" rows="1"></textarea>
+        <button type="submit">Create Payment Source</button>
+    </form>
+</div>
+{{ nav.payment_source_home(budget_id) }}
+{% endblock %}

@@ -1,0 +1,20 @@
+{% import "nav_macros.html" as nav %}
+{% block content %}
+<div class="receipts-home-container">
+    <h1 class="receipts-home-title">Receipts</h1>
+
+    <div class="btn-group2">
+        {{ nav.receipts_view(budget_id) }}
+    </div>
+    <div class="btn-group2">
+        {{ nav.receipts_create(budget_id) }}
+    </div>
+
+    <div class="btn-group2">
+        {{ nav.budgets_home(budget_id) }}
+    </div>
+    <div class="btn-group2">
+        {{ nav.home() }}
+    </div>
+</div>
+{% endblock %}

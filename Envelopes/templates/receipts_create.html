@@ -1,0 +1,94 @@
+{% import "nav_macros.html" as nav %}
+{% block content %}
+
+<h1>Create Receipt</h1>
+
+<div class="container">
+    <form method="POST" id="receipt-form">
+
+        <h3>Transactions</h3>
+
+        <div id="transactions-container"></div>
+
+        <button type="button" id="add-transaction">+ Add Transaction</button>
+
+        <br><br>
+        <button type="submit">Create Receipt</button>
+    </form>
+</div>
+
+<script>
+const envelopeMap = {{ envelope_map | tojson }};
+let transactionCount = 0;
+
+function createTransactionRow() {
+    transactionCount += 1;
+    const rowId = `transaction-${transactionCount}`;
+
+    const container = document.getElementById("transactions-container");
+    const row = document.createElement("div");
+
+    row.classList.add("transaction-row");
+    row.style = "border:1px solid #ccc; padding:10px; margin-bottom:10px;";
+    row.id = rowId;
+
+    // Envelope dropdown
+    const envelopeOptions = Object.keys(envelopeMap).map(id => {
+        return `<option value="${id}">${envelopeMap[id].name}</option>`;
+    }).join("");
+
+    row.innerHTML = `
+        <label>Envelope:</label>
+        <select name="transactions[${transactionCount}][envelope_id]"
+                onchange="renderFields(${transactionCount}, this.value)">
+            <option value="">--Select Envelope--</option>
+            ${envelopeOptions}
+        </select>
+
+        <div id="fields-${transactionCount}" style="margin-top:10px;"></div>
+    `;
+
+    container.appendChild(row);
+}
+
+function renderFields(rowNumber, envelopeId) {
+    const fieldDiv = document.getElementById(`fields-${rowNumber}`);
+    fieldDiv.innerHTML = "";
+
+    if (!envelopeId || !envelopeMap[envelopeId]) return;
+
+    const fields = envelopeMap[envelopeId].fields;
+
+    fields.forEach(field => {
+        const inputName = `transactions[${rowNumber}][${field.name}]`;
+
+        let input;
+        if (field.type.startsWith("numeric")) {
+            input = `<input type="number" step="0.01" name="${inputName}">`;
+        } else if (field.type === "date") {
+            input = `<input type="date" name="${inputName}">`;
+        } else {
+            input = `<input type="text" name="${inputName}">`;
+        }
+
+        fieldDiv.innerHTML += `
+            <div style="margin-bottom:8px;">
+                <label>${field.name} ${field.required ? "(required)" : ""}</label>
+                ${input}
+            </div>
+        `;
+    });
+}
+
+// Initial row
+createTransactionRow();
+
+document.getElementById("add-transaction")
+        .addEventListener("click", createTransactionRow);
+</script>
+
+<div class="btn-group2">
+    {{ nav.receipts_home(budget_id) }}
+</div>
+
+{% endblock %}

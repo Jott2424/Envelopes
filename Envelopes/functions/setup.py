@@ -54,18 +54,10 @@ def first_time_init_db():
     ''')
     #accounts that money can physically be spent from
     cur.execute('''
-        CREATE TABLE IF NOT EXISTS accounts (
-            pk_accounts_id SERIAL PRIMARY KEY,
+        CREATE TABLE IF NOT EXISTS payment_sources (
+            pk_payment_sources_id SERIAL PRIMARY KEY,
             fk_budgets_id INTEGER REFERENCES budgets(pk_budgets_id),
             name TEXT NOT NULL
-        );
-    ''')
-    # merchants where money is spent at
-    cur.execute('''
-        CREATE TABLE IF NOT EXISTS merchants (
-            pk_merchants_id SERIAL PRIMARY KEY,
-            fk_budgets_id INTEGER REFERENCES budgets(pk_budgets_id),
-            name TEXT UNIQUE NOT NULL
         );
     ''')
     #a receipt can have multiple envelope deductions (transactions)
@@ -74,13 +66,19 @@ def first_time_init_db():
             pk_receipts_id SERIAL PRIMARY KEY,
             fk_budgets_id INTEGER REFERENCES budgets(pk_budgets_id),
             fk_users_id INTEGER REFERENCES users(pk_users_id),
-            fk_merchants_id INTEGER REFERENCES merchants(pk_merchants_id),
-            fk_accounts_id INTEGER REFERENCES accounts(pk_accounts_id),
-            transaction_date DATE NOT NULL,
-            amount NUMERIC(10,2) NOT NULL,
-            description TEXT
+            fk_payment_sources_id INTEGER REFERENCES payment_sources(pk_payment_sources_id)
         );
     ''')
+    #a receipt can have multiple envelope deductions (transactions)
+    cur.execute('''
+        CREATE TABLE IF NOT EXISTS transactions (
+            pk_transactions_id SERIAL PRIMARY KEY,
+            fk_budgets_id INTEGER REFERENCES budgets(pk_budgets_id),
+            fk_receipts_id INTEGER REFERENCES budgets(pk_budgets_id),
+            transaction_id_array
+        );
+    ''')
+
     # table for storing presets for depositing money into envelopes
     cur.execute('''
         CREATE TABLE IF NOT EXISTS user_envelope_deposit_presets (
@@ -112,8 +110,6 @@ def first_time_init_db():
             fk_receipts_id INTEGER REFERENCES receipts(pk_receipts_id),
             fk_envelopes_id INTEGER REFERENCES envelopes(pk_envelopes_id),
             fk_budgets_id INTEGER REFERENCES budgets(pk_budgets_id),
-            envelope_transaction_type TEXT NOT NULL,
-            amount NUMERIC(10,2) NOT NULL,
             value TEXT NOT NULL
         );
     ''')

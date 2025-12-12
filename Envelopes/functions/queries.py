@@ -12,6 +12,7 @@ GET_BUDGET_NAME_BY_BUDGET_USERS = "SELECT b.pk_budgets_id, b.name FROM budgets b
 GET_USERS_NOT_ALREADY_IN_BUDGET_USERS_BY_USER_ID = "SELECT u.pk_users_id, u.name FROM users u WHERE u.pk_users_id != %s AND u.pk_users_id NOT IN (SELECT fk_users_id FROM budget_users WHERE fk_budgets_id = %s)"
 GET_ENVELOPES_AND_TRANSACTION_FIELDS_BY_BUDGET_ID = "SELECT e.pk_envelopes_id, e.name, etf.form_order, etf.field_name, etf.field_type, etf.is_required FROM envelope_transaction_fields etf JOIN envelopes e ON etf.fk_envelopes_id = e.pk_envelopes_id WHERE etf.fk_budgets_id = %s"
 GET_ENVELOPE_NAME_AND_TRANSACTION_FIELDS_BY_BUDGET_AND_ENVELOPE_ID = "SELECT e.name, pk_envelope_transaction_fields_id, etf.fk_budgets_id, fk_envelopes_id, form_order, field_name, field_type, is_required FROM envelope_transaction_fields etf JOIN envelopes e ON e.pk_envelopes_id = fk_envelopes_id WHERE etf.fk_budgets_id = %s and fk_envelopes_id = %s"
+GET_ENVELOPES_NAME_AND_TRANSACTION_FIELDS_BY_BUDGET = "SELECT e.name, fk_envelopes_id, form_order, field_name, field_type, is_required FROM envelope_transaction_fields etf JOIN envelopes e ON e.pk_envelopes_id = fk_envelopes_id WHERE etf.fk_budgets_id = %s"
 
 ########### Put ###########
 INSERT_INTO_ENVELOPES = "INSERT INTO envelopes (fk_budgets_id, name) VALUES (%s, %s)"
