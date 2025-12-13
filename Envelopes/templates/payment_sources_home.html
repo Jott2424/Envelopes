@@ -1,7 +1,7 @@
 {% import "nav_macros.html" as nav %}
 {% block content %}
 <div class="payment_source-home-container">
-    <h1 class="payment_source-home-title">Budget</h1>
+    <h1 class="payment_source-home-title">Payment Sources</h1>
 
     <div class="btn-group">
         {{ nav.payment_sources_view(budget_id) }}
@@ -12,7 +12,7 @@
     </div>
 
     <div class="btn-group2">
-        {{ nav.home() }}
+        {{ nav.budgets_home(budget_id) }}
     </div>
 
     <div class="btn-group2">
