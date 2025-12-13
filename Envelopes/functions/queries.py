@@ -15,7 +15,7 @@ GET_BUDGET_NAME_BY_BUDGET_USERS = "SELECT b.pk_budgets_id, b.name FROM budgets b
 GET_USERS_NOT_ALREADY_IN_BUDGET_USERS_BY_USER_ID = "SELECT u.pk_users_id, u.name FROM users u WHERE u.pk_users_id != %s AND u.pk_users_id NOT IN (SELECT fk_users_id FROM budget_users WHERE fk_budgets_id = %s)"
 GET_ENVELOPES_AND_TRANSACTION_FIELDS_BY_BUDGET_ID = "SELECT e.pk_envelopes_id, e.name, etf.form_order, etf.field_name, etf.field_type, etf.is_required FROM envelope_transaction_fields etf JOIN envelopes e ON etf.fk_envelopes_id = e.pk_envelopes_id WHERE e.fk_budgets_id = %s"
 GET_ENVELOPE_NAME_AND_TRANSACTION_FIELDS_BY_BUDGET_AND_ENVELOPE_ID = "SELECT e.name, pk_envelope_transaction_fields_id, e.fk_budgets_id, fk_envelopes_id, form_order, field_name, field_type, is_required FROM envelope_transaction_fields etf JOIN envelopes e ON e.pk_envelopes_id = fk_envelopes_id WHERE e.fk_budgets_id = %s AND fk_envelopes_id = %s"
-GET_ENVELOPE_NAME_AND_TRANSACTION_FIELDS_EXCLUDING_AMOUNT_BY_BUDGET_AND_ENVELOPE_ID = "SELECT e.name, pk_envelope_transaction_fields_id, e.fk_budgets_id, fk_envelopes_id, form_order, field_name, field_type, is_required FROM envelope_transaction_fields etf JOIN envelopes e ON e.pk_envelopes_id = fk_envelopes_id WHERE e.fk_budgets_id = %s AND fk_envelopes_id = %s AND lower(field_name) != 'amount' "
+GET_ENVELOPE_NAME_AND_TRANSACTION_FIELDS_EXCLUDING_AMOUNT_BY_BUDGET_AND_ENVELOPE_ID = "SELECT e.name, pk_envelope_transaction_fields_id, e.fk_budgets_id, fk_envelopes_id, form_order, field_name, field_type, is_required FROM envelope_transaction_fields etf JOIN envelopes e ON e.pk_envelopes_id = fk_envelopes_id WHERE e.fk_budgets_id = %s AND fk_envelopes_id = %s AND lower(field_name) NOT IN ('amount','description') "
 GET_ENVELOPES_NAME_AND_TRANSACTION_FIELDS_BY_BUDGET = "SELECT e.name, fk_envelopes_id, form_order, field_name, field_type, is_required FROM envelope_transaction_fields etf JOIN envelopes e ON e.pk_envelopes_id = fk_envelopes_id WHERE e.fk_budgets_id = %s"
 
 ########### Put ###########
@@ -25,7 +25,6 @@ INSERT_INTO_ENVELOPE_TRANSACTION_FIELDS = "INSERT INTO envelope_transaction_fiel
 INSERT_INTO_USER_DEFAULT_BUDGETS = "INSERT INTO user_default_budget (fk_users_id, fk_budgets_id) VALUES (%s, %s)"
 INSERT_INTO_BUDGET_USERS = "INSERT INTO budget_users (fk_budgets_id, fk_users_id) VALUES (%s, %s)"
 INSERT_INTO_PAYMENT_SOURCES = "INSERT INTO payment_sources (fk_budgets_id, name) VALUES (%s, %s)"
-INSERT_INTO_RECEIPTS = "INSERT INTO receipts (fk_users_id, fk_payment_sources_id) VALUES (%s, %s)"
 INSERT_INTO_TRANSACTIONS = "INSERT INTO transactions (fk_receipts_id, fk_envelopes_id, details) VALUES (%s, %s, %s)"
 
 ########### Put With Return ###########
@@ -33,7 +32,7 @@ INSERT_INTO_USERS_RETURN_PK = "INSERT INTO users (name, password) VALUES (%s, %s
 INSERT_INTO_BUDGETS_RETURN_PK = "INSERT INTO budgets (name) VALUES (%s) RETURNING pk_budgets_id"
 INSERT_INTO_ENVELOPES_RETURN_PK = "INSERT INTO envelopes (fk_budgets_id, name) VALUES (%s, %s) RETURNING pk_envelopes_id"
 INSERT_INTO_PAYMENT_SOURCES_RETURN_PK = "INSERT INTO payment_sources (fk_budgets_id, name) VALUES (%s, %s) RETURNING pk_payment_sources_id"
-INSERT_INTO_RECEIPTS_RETURN_PK = "INSERT INTO receipts (fk_budgets_id, fk_users_id, fk_payment_sources_id, debit_or_credit, transaction_date, merchant, amount) VALUES (%s, %s, %s, %s, %s, %s, %s) RETURNING pk_receipts_id"
+INSERT_INTO_RECEIPTS_RETURN_PK = "INSERT INTO receipts (fk_budgets_id, fk_users_id, fk_payment_sources_id, debit_or_credit, transaction_date, merchant, amount, description) VALUES (%s, %s, %s, %s, %s, %s, %s, %s) RETURNING pk_receipts_id"
 
 ########### PATCH ###########
 UPDATE_USER_DEFAULT_BUDGET_BY_USER_ID = "UPDATE user_default_budget SET fk_budgets_id = %s WHERE fk_users_id = %s"

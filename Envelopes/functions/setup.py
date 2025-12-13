@@ -73,7 +73,8 @@ def first_time_init_db():
             debit_or_credit TEXT NOT NULL,
             transaction_date DATE NOT NULL,
             merchant TEXT NOT NULL,
-            amount NUMERIC(10,2) NOT NULL
+            amount NUMERIC(10,2) NOT NULL,
+            Description TEXT NOT NULL
         );
     ''')
     #a receipt can have multiple envelope deductions (transactions)

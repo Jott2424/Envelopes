@@ -1,8 +1,9 @@
-from functions import db_utils, queries
+from functions import db_utils, queries, helper_functions as hf
 
 from flask import render_template, request, redirect, url_for, flash
 from flask_login import current_user
 import json
+from decimal import Decimal 
 
 def receipts_home(budget_id):
     return render_template('receipts_home.html', budget_id=budget_id)
@@ -116,19 +117,37 @@ def receipts_create(budget_id):
             for e in errors:
                 flash(e, "error")
             return redirect(request.url)
+        
+        description = request.form.get("description", "")
+
+        # ------------------------------
+        # Calculate receipt amount
+        # ------------------------------
+        total_amount = Decimal("0.00")
+
+        for txn in transactions.values():
+            amt = txn.get("amount")
+            if amt:
+                try:
+                    total_amount += Decimal(amt)
+                except ValueError:
+                    flash("Invalid amount value.", "error")
+                    return redirect(request.url)
 
         # ------------------------------
         # Insert receipt
         # ------------------------------
         cur.execute(
             queries.INSERT_INTO_RECEIPTS_RETURN_PK,
-            (
-                current_user.id,
+            (   
                 budget_id,
+                current_user.id,
                 payment_source_id,
                 debit_or_credit,
                 transaction_date,
-                merchant
+                merchant,
+                total_amount,
+                description
             )
         )
         receipt_id = cur.fetchone()[0]
@@ -138,6 +157,11 @@ def receipts_create(budget_id):
         # ------------------------------
         for txn in transactions.values():
             envelope_id = txn.pop("envelope_id")
+
+            # description is optional; leave it in JSONB
+            txn_description = txn.pop("description", None)
+            if txn_description:
+                txn['description'] = txn_description
 
             cur.execute(
                 queries.INSERT_INTO_TRANSACTIONS,
@@ -152,12 +176,7 @@ def receipts_create(budget_id):
     # -----------------------------------------
     # 4. Render page (GET)
     # -----------------------------------------
-    return render_template(
-        "receipts_create.html",
-        budget_id=budget_id,
-        envelope_map=envelope_map,
-        payment_sources=payment_sources
-    )
+    return render_template("receipts_create.html",budget_id=budget_id, envelope_map=envelope_map, payment_sources=payment_sources)
 
 
 def receipts_view(budget_id):

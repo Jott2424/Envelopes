@@ -44,6 +44,9 @@
             <option value="credit">Credit (Money In)</option>
         </select>
 
+        <label>Description</label>
+        <input type="text" name="receipt_description">
+
         <hr>
 
         <!-- ========================= -->
@@ -60,11 +63,11 @@
         <button type="submit">Create Receipt</button>
     </form>
 </div>
-
 <script>
 const envelopeMap = {{ envelope_map | tojson }};
 let transactionCount = 0;
 
+// Create a transaction row
 function createTransactionRow() {
     transactionCount += 1;
 
@@ -73,6 +76,7 @@ function createTransactionRow() {
 
     row.classList.add("transaction-row");
     row.style = "border:1px solid #ccc; padding:10px; margin-bottom:10px;";
+    row.id = `transaction-${transactionCount}`;
 
     const envelopeOptions = Object.keys(envelopeMap).map(id => {
         return `<option value="${id}">${envelopeMap[id].name}</option>`;
@@ -88,11 +92,16 @@ function createTransactionRow() {
         </select>
 
         <div id="fields-${transactionCount}" style="margin-top:10px;"></div>
+
+        <button type="button" class="remove-transaction" style="margin-top:5px; background:red; color:white; border:none; padding:4px 6px; cursor:pointer;">
+            – Remove
+        </button>
     `;
 
     container.appendChild(row);
 }
 
+// Render fields for a row
 function renderFields(rowNumber, envelopeId) {
     const fieldDiv = document.getElementById(`fields-${rowNumber}`);
     fieldDiv.innerHTML = "";
@@ -101,7 +110,22 @@ function renderFields(rowNumber, envelopeId) {
 
     const fields = envelopeMap[envelopeId].fields;
 
+    // Description field first
+    const descField = fields.find(f => f.name.toLowerCase() === "description");
+    if (descField) {
+        const inputName = `transactions[${rowNumber}][description]`;
+        fieldDiv.innerHTML += `
+            <div style="margin-bottom:8px;">
+                <label>Description</label>
+                <input type="text" name="${inputName}" value="">
+            </div>
+        `;
+    }
+
+    // Other fields
     fields.forEach(field => {
+        if (field.name.toLowerCase() === "description") return;
+
         const inputName = `transactions[${rowNumber}][${field.name}]`;
 
         let input;
@@ -113,22 +137,32 @@ function renderFields(rowNumber, envelopeId) {
             input = `<input type="text" name="${inputName}" ${field.required ? "required" : ""}>`;
         }
 
+        const labelText = field.name.charAt(0).toUpperCase() + field.name.slice(1).replace(/_/g, " ");
+
         fieldDiv.innerHTML += `
             <div style="margin-bottom:8px;">
-                <label>${field.name}${field.required ? " *" : ""}</label>
+                <label>${labelText}${field.required ? " *" : ""}</label>
                 ${input}
             </div>
         `;
     });
 }
 
-// Load first transaction row automatically
+// Load first row automatically
 createTransactionRow();
 
-document
-    .getElementById("add-transaction")
-    .addEventListener("click", createTransactionRow);
+// Add new transaction row
+document.getElementById("add-transaction").addEventListener("click", createTransactionRow);
+
+// Remove transaction row
+document.addEventListener("click", function(e) {
+    if (e.target.classList.contains("remove-transaction")) {
+        const row = e.target.closest(".transaction-row");
+        if (row) row.remove();
+    }
+});
 </script>
+
 
 <div class="btn-group2">
     {{ nav.envelopes_home(budget_id) }}
