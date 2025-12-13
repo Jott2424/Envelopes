@@ -78,9 +78,7 @@ def envelopes_edit(budget_id, envelope_id):
         cur = conn.cursor()
 
         cur.execute(
-            queries.GET_ENVELOPE_NAME_AND_TRANSACTION_FIELDS_BY_BUDGET_AND_ENVELOPE_ID,
-            (budget_id, envelope_id)
-        )
+            queries.GET_ENVELOPE_NAME_AND_TRANSACTION_FIELDS_EXCLUDING_AMOUNT_BY_BUDGET_AND_ENVELOPE_ID,(budget_id, envelope_id))
         rows = cur.fetchall()
 
         fields = []

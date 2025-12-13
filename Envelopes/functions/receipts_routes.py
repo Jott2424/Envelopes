@@ -7,6 +7,7 @@ import json
 def receipts_home(budget_id):
     return render_template('receipts_home.html', budget_id=budget_id)
 
+
 def receipts_create(budget_id):
     conn = db_utils.get_db_connection()
     cur = conn.cursor()
@@ -14,7 +15,10 @@ def receipts_create(budget_id):
     # -----------------------------------------
     # 1. Load envelope field definitions
     # -----------------------------------------
-    cur.execute(queries.GET_ENVELOPES_NAME_AND_TRANSACTION_FIELDS_BY_BUDGET,(budget_id,))
+    cur.execute(
+        queries.GET_ENVELOPES_NAME_AND_TRANSACTION_FIELDS_BY_BUDGET,
+        (budget_id,)
+    )
     rows = cur.fetchall()
 
     envelope_map = {}
@@ -55,11 +59,19 @@ def receipts_create(budget_id):
     # 3. POST logic
     # -----------------------------------------
     if request.method == "POST":
+        # ------------------------------
+        # Receipt-level required fields
+        # ------------------------------
         payment_source_id = request.form.get("payment_source_id")
         debit_or_credit = request.form.get("debit_or_credit")
+        transaction_date = request.form.get("transaction_date")
+        merchant = request.form.get("merchant")
 
-        if not payment_source_id or not debit_or_credit:
-            flash("You must select a payment source and transaction type.", "error")
+        if not all([payment_source_id, debit_or_credit, transaction_date, merchant]):
+            flash(
+                "Date, merchant, payment source, and transaction type are required.",
+                "error"
+            )
             return redirect(request.url)
 
         # ------------------------------
@@ -69,26 +81,28 @@ def receipts_create(budget_id):
 
         for key, value in request.form.items():
             if key.startswith("transactions["):
-                # Example key:
-                # transactions[14][amount]
                 parts = key.split("[")
-                envelope_id = parts[1][:-1]  # remove trailing ]
-                field_name = parts[2][:-1]   # also remove trailing ]
+                row_id = parts[1][:-1]     # row number
+                field_name = parts[2][:-1]
 
-                transactions.setdefault(envelope_id, {})
-                transactions[envelope_id][field_name] = value.strip()
+                transactions.setdefault(row_id, {})
+                transactions[row_id][field_name] = value.strip()
 
         # ------------------------------
-        # Validate required fields
+        # Validate required envelope fields
         # ------------------------------
         errors = []
 
-        for envelope_id, env in envelope_map.items():
-            if envelope_id not in transactions:
-                # No transaction entered for this envelope → allowed.
+        for row_id, txn in transactions.items():
+            envelope_id = txn.get("envelope_id")
+
+            if not envelope_id:
+                errors.append("Each transaction must have an envelope selected.")
                 continue
 
-            txn = transactions[envelope_id]
+            env = envelope_map.get(int(envelope_id))
+            if not env:
+                continue
 
             for field in env["fields"]:
                 if field["required"]:
@@ -104,20 +118,30 @@ def receipts_create(budget_id):
             return redirect(request.url)
 
         # ------------------------------
-        # Insert receipt with DebitOrCredit
+        # Insert receipt
         # ------------------------------
-        cur.execute(queries.INSERT_INTO_RECEIPTS_RETURN_PK, (current_user.id, budget_id, payment_source_id, debit_or_credit))
+        cur.execute(
+            queries.INSERT_INTO_RECEIPTS_RETURN_PK,
+            (
+                current_user.id,
+                budget_id,
+                payment_source_id,
+                debit_or_credit,
+                transaction_date,
+                merchant
+            )
+        )
         receipt_id = cur.fetchone()[0]
 
         # ------------------------------
         # Insert transactions (JSONB)
         # ------------------------------
-        for envelope_id, data in transactions.items():
-            details_json = json.dumps(data)
+        for txn in transactions.values():
+            envelope_id = txn.pop("envelope_id")
 
             cur.execute(
                 queries.INSERT_INTO_TRANSACTIONS,
-                (receipt_id, envelope_id, details_json)
+                (receipt_id, envelope_id, json.dumps(txn))
             )
 
         conn.commit()

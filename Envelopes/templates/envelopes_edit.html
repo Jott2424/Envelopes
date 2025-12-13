@@ -17,6 +17,53 @@
         >
 
         <hr>
+        <h3>Always Tracked (Automatically)</h3>
+
+        <!-- DATE -->
+        <div class="tracker-row"
+            style="margin-bottom:10px; display:flex; gap:10px; align-items:center; opacity:0.6;">
+            <input type="text" value="Date" style="width:200px;" disabled>
+            <select disabled>
+                <option>Date</option>
+            </select>
+            <label>
+                <input type="checkbox" checked disabled>
+                Required
+            </label>
+        </div>
+
+        <!-- MERCHANT -->
+        <div class="tracker-row"
+            style="margin-bottom:10px; display:flex; gap:10px; align-items:center; opacity:0.6;">
+            <input type="text" value="Merchant" style="width:200px;" disabled>
+            <select disabled>
+                <option>Text</option>
+            </select>
+            <label>
+                <input type="checkbox" checked disabled>
+                Required
+            </label>
+        </div>
+
+        <!-- AMOUNT -->
+        <div class="tracker-row"
+            style="margin-bottom:10px; display:flex; gap:10px; align-items:center; opacity:0.6;">
+            <input type="text" value="Amount" style="width:200px;" disabled>
+            <select disabled>
+                <option>Numeric(10,2)</option>
+            </select>
+            <label>
+                <input type="checkbox" checked disabled>
+                Required
+            </label>
+        </div>
+
+        <!-- Hidden inputs so AMOUNT remains persisted -->
+        <input type="hidden" name="trackers[]" value="amount">
+        <input type="hidden" name="types[]" value="numeric(10,2)">
+        <input type="hidden" name="required[]" value="0">
+
+        <hr>
 
         <h3>Edit What This Envelope Tracks</h3>
 
