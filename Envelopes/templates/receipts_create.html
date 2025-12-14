@@ -13,21 +13,10 @@
         <h3>Receipt Details</h3>
 
         <label for="transaction_date">Date</label>
-        <input
-            type="date"
-            id="transaction_date"
-            name="transaction_date"
-            required
-        >
+        <input type="date" id="transaction_date" name="transaction_date" required>
 
         <label for="merchant">Merchant</label>
-        <input
-            type="text"
-            id="merchant"
-            name="merchant"
-            placeholder="e.g. Costco"
-            required
-        >
+        <input type="text" id="merchant" name="merchant" placeholder="e.g. Costco" required>
 
         <h3>Payment Source</h3>
         <select name="payment_source_id" required>
@@ -54,15 +43,31 @@
         <!-- ========================= -->
 
         <h3>Transactions</h3>
-
         <div id="transactions-container"></div>
-
         <button type="button" id="add-transaction">+ Add Transaction</button>
+
+        <hr>
+
+        <!-- ========================= -->
+        <!-- Save as Template -->
+        <!-- ========================= -->
+
+        <h3>Optional: Save as Template</h3>
+        <label>
+            <input type="checkbox" name="save_as_template" id="save_as_template">
+            Save this receipt as a template
+        </label>
+
+        <div id="template_name_div" style="margin-top:10px; display:none;">
+            <label for="template_name">Template Name</label>
+            <input type="text" id="template_name" name="template_name" placeholder="Enter template name">
+        </div>
 
         <br><br>
         <button type="submit">Create Receipt</button>
     </form>
 </div>
+
 <script>
 const envelopeMap = {{ envelope_map | tojson }};
 let transactionCount = 0;
@@ -101,7 +106,7 @@ function createTransactionRow() {
     container.appendChild(row);
 }
 
-// Render fields for a row
+// Render fields for a transaction row
 function renderFields(rowNumber, envelopeId) {
     const fieldDiv = document.getElementById(`fields-${rowNumber}`);
     fieldDiv.innerHTML = "";
@@ -110,7 +115,7 @@ function renderFields(rowNumber, envelopeId) {
 
     const fields = envelopeMap[envelopeId].fields;
 
-    // Description field first
+    // Description first
     const descField = fields.find(f => f.name.toLowerCase() === "description");
     if (descField) {
         const inputName = `transactions[${rowNumber}][description]`;
@@ -138,7 +143,6 @@ function renderFields(rowNumber, envelopeId) {
         }
 
         const labelText = field.name.charAt(0).toUpperCase() + field.name.slice(1).replace(/_/g, " ");
-
         fieldDiv.innerHTML += `
             <div style="margin-bottom:8px;">
                 <label>${labelText}${field.required ? " *" : ""}</label>
@@ -148,10 +152,10 @@ function renderFields(rowNumber, envelopeId) {
     });
 }
 
-// Load first row automatically
+// Load first transaction row
 createTransactionRow();
 
-// Add new transaction row
+// Add transaction row
 document.getElementById("add-transaction").addEventListener("click", createTransactionRow);
 
 // Remove transaction row
@@ -161,8 +165,13 @@ document.addEventListener("click", function(e) {
         if (row) row.remove();
     }
 });
-</script>
 
+// Toggle template name input
+document.getElementById("save_as_template").addEventListener("change", function() {
+    const div = document.getElementById("template_name_div");
+    div.style.display = this.checked ? "block" : "none";
+});
+</script>
 
 <div class="btn-group2">
     {{ nav.envelopes_home(budget_id) }}

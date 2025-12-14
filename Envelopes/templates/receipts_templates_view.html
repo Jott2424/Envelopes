@@ -1,0 +1,12 @@
+<h1>Receipt Templates</h1>
+
+<ul>
+{% for t in templates %}
+    <li>
+        <strong>{{ t[1] }}</strong>
+        <a href="{{ url_for('receipts_templates_delete_route', budget_id=budget_id, template_id=t[0]) }}">
+            Delete
+        </a>
+    </li>
+{% endfor %}
+</ul>
