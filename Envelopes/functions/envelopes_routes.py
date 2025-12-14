@@ -32,44 +32,78 @@ def envelopes_view(budget_id):
     return render_template('envelopes_view.html', envelopes=envelopes, budget_id=budget_id)
 
 def envelopes_create(budget_id):
-    if request.method == 'POST':
-        name = request.form.get('envelope_name')
+    if request.method == "POST":
+        name = request.form.get("envelope_name", "").strip()
+
+        if not name:
+            flash("Envelope name is required.", "error")
+            return redirect(request.url)
 
         conn = db_utils.get_db_connection()
         cur = conn.cursor()
 
-        # Check if an envelope with this name already exists in this budget
-        cur.execute(queries.GET_ENVELOPE_BY_NAME_AND_BUDGET_ID, (name, budget_id))
-        exists = cur.fetchone()
-        
-        if exists is None:
-            # Insert new envelope
-            cur.execute(queries.INSERT_INTO_ENVELOPES_RETURN_PK, (budget_id, name))
-            pk_envelope_id = cur.fetchone()[0]
+        # Check duplicate
+        cur.execute(
+            queries.GET_ENVELOPE_BY_NAME_AND_BUDGET_ID,
+            (name, budget_id)
+        )
 
-            # Insert envelope transaction fields
-            trackers = request.form.getlist('trackers[]')
-            types = request.form.getlist('types[]')
-            required_indices = request.form.getlist('required[]')
-            required_indices = [int(i) for i in required_indices]  # cast to int
-
-            for idx, (t_name, t_type) in enumerate(zip(trackers, types), start=0):
-                is_required = idx in required_indices
-                cur.execute(queries.INSERT_INTO_ENVELOPE_TRANSACTION_FIELDS,(pk_envelope_id, idx + 1, t_name, t_type, is_required))
-
-            conn.commit()
+        if cur.fetchone():
+            flash(f"Envelope '{name}' already exists in this budget.", "error")
             cur.close()
             conn.close()
+            return redirect(request.url)
 
-            return redirect(url_for("envelopes_home_route", budget_id=budget_id))
-        else:
-            flash(f"Envelope '{name}' already exists in this budget.")
-            cur.close()
-            conn.close()
-            return redirect(url_for("envelopes_create_route", budget_id=budget_id))
+        # Insert envelope
+        cur.execute(
+            queries.INSERT_INTO_ENVELOPES_RETURN_PK,
+            (budget_id, name)
+        )
+        pk_envelope_id = cur.fetchone()[0]
 
-    # GET request: initial page load
-    return render_template("envelopes_create.html", budget_id=budget_id)
+        # Collect trackers
+        trackers = request.form.getlist("trackers[]")
+        types = request.form.getlist("types[]")
+        required_indices = [int(i) for i in request.form.getlist("required[]")]
+
+        form_order = 1
+
+        for idx, (t_name, t_type) in enumerate(zip(trackers, types)):
+            t_name = t_name.strip()
+
+            # Skip empty optional rows
+            if not t_name:
+                continue
+
+            is_required = idx in required_indices
+
+            cur.execute(
+                queries.INSERT_INTO_ENVELOPE_TRANSACTION_FIELDS,
+                (
+                    pk_envelope_id,
+                    form_order,
+                    t_name,
+                    t_type,
+                    is_required
+                )
+            )
+
+            form_order += 1
+
+        conn.commit()
+        cur.close()
+        conn.close()
+
+        flash("Envelope created successfully!", "success")
+        return redirect(
+            url_for("envelopes_home_route", budget_id=budget_id)
+        )
+
+    # GET
+    return render_template(
+        "envelopes_create.html",
+        budget_id=budget_id
+    )
 
 
 def envelopes_edit(budget_id, envelope_id):
