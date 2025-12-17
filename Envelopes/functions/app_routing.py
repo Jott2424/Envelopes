@@ -134,6 +134,18 @@ def register_routes(app):
     @login_required
     def receipts_delete_route(budget_id, receipt_id):
         return envelopes_routes.envelopes_delete(budget_id,receipt_id)
+    
+    @app.route('/budget/<int:budget_id>/receipt_templates/view', methods=['GET'])
+    @login_required
+    def receipt_templates_view_route(budget_id):
+        return receipts_routes.receipt_templates_view(budget_id)
+
+
+    # Edit a specific template
+    @app.route('/budget/<int:budget_id>/receipt_templates/<int:template_id>/edit', methods=['GET', 'POST'])
+    @login_required
+    def receipt_templates_edit_route(budget_id, template_id):
+        return receipts_routes.receipt_templates_edit(budget_id, template_id)
 
 
 ########################## PAYMENT SOURCES ##########################

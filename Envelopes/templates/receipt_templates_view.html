@@ -1,0 +1,35 @@
+{% import "nav_macros.html" as nav %}
+{% block content %}
+
+<h1>Receipt Templates</h1>
+
+<div class="container">
+    {% if templates %}
+        <table border="1" cellpadding="6" style="border-collapse:collapse; width:100%;">
+            <thead>
+                <tr>
+                    <th>Description</th>
+                    <th>Payment Source</th>
+                    <th>Type</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for t in templates %}
+                    <tr>
+                        <td>{{ t.description }}</td>
+                        <td>{{ t.payment_source_name }}</td>
+                        <td>{{ t.debit_or_credit }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>No receipt templates found for this budget.</p>
+    {% endif %}
+</div>
+
+<div class="btn-group2">
+    {{ nav.receipts_home(budget_id) }}
+</div>
+
+{% endblock %}

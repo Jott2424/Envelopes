@@ -77,11 +77,32 @@ def first_time_init_db():
             Description TEXT NOT NULL
         );
     ''')
-    #a receipt can have multiple envelope deductions (transactions)
+    # a receipt can be saved to submit later
+    cur.execute('''
+        CREATE TABLE IF NOT EXISTS receipt_templates (
+            pk_receipt_templates_id SERIAL PRIMARY KEY,
+            fk_budgets_id INTEGER REFERENCES budgets(pk_budgets_id),
+            fk_users_id INTEGER REFERENCES users(pk_users_id),
+            fk_payment_sources_id INTEGER REFERENCES payment_sources(pk_payment_sources_id),
+            debit_or_credit TEXT NOT NULL,
+            merchant TEXT NOT NULL,
+            description TEXT NOT NULL
+        );
+    ''')
+    #a transaction is an individual addition or subtraction from an envelope
     cur.execute('''
         CREATE TABLE IF NOT EXISTS transactions (
             pk_transactions_id SERIAL PRIMARY KEY,
             fk_receipts_id INTEGER REFERENCES receipts(pk_receipts_id),
+            fk_envelopes_id INTEGER REFERENCES envelopes(pk_envelopes_id),
+            details JSONB NOT NULL
+        );
+    ''')
+    #a transaction can be saved to submit later
+    cur.execute('''
+        CREATE TABLE IF NOT EXISTS transaction_templates (
+            pk_transaction_templates_id SERIAL PRIMARY KEY,
+            fk_receipt_templates_id INTEGER REFERENCES receipt_templates(pk_receipt_templates_id),
             fk_envelopes_id INTEGER REFERENCES envelopes(pk_envelopes_id),
             details JSONB NOT NULL
         );

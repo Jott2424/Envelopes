@@ -91,6 +91,14 @@
     <a href="{{ url_for('receipts_delete_route', budget_id=budget_id) }}">Delete Receipt</a>
 {% endmacro %}
 
+{% macro receipt_templates_view(budget_id) %}
+    <a href="{{ url_for('receipt_templates_view_route', budget_id=budget_id) }}">View Receipt Templates</a>
+{% endmacro %}
+
+{% macro receipt_templates_edit(budget_id) %}
+    <a href="{{ url_for('receipt_templates_edit_route', budget_id=budget_id) }}">Edit</a>
+{% endmacro %}
+
 
 
 {% macro payment_sources_home(budget_id) %}
