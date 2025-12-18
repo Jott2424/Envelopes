@@ -22,7 +22,14 @@
 </div>
 
 {% for week, env_data in ledger.items() %}
-    <h3>{{ week }}</h3>
+    {% set week_start, week_end = week.split(' - ') %}
+    <h3>
+        {{ week }}
+        <!-- View link -->
+        <a href="{{ url_for('receipts_view_route', budget_id=budget_id) }}?start_date={{ week_start }}&end_date={{ week_end }}"
+           style="font-size:0.8em; margin-left:10px;">[View]</a>
+    </h3>
+
     <table border="1" cellpadding="6" style="border-collapse:collapse; width:100%; margin-bottom:20px;">
         <thead>
             <tr>
