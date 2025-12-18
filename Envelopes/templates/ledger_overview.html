@@ -21,39 +21,39 @@
     </form>
 </div>
 
-<table border="1" cellpadding="6" style="border-collapse:collapse; width:100%;">
-    <thead>
-        <tr>
-            <th>Week</th>
-            {% for eid, name in envelopes.items() %}
-                <th>{{ name }}</th>
-            {% endfor %}
-        </tr>
-    </thead>
-    <tbody>
-        {% for week, env_data in ledger.items() %}
+{% for week, env_data in ledger.items() %}
+    <h3>{{ week }}</h3>
+    <table border="1" cellpadding="6" style="border-collapse:collapse; width:100%; margin-bottom:20px;">
+        <thead>
             <tr>
-                <td>Debit</td>
+                <th>Type</th>
+                {% for eid, name in envelopes.items() %}
+                    <th>{{ name }}</th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Deposits</td>
                 {% for eid in envelopes.keys() %}
-                    <td>{{ env_data.get(eid, {}).get('debit', 0) }}</td>
+                    <td>{{ env_data.get(eid, {}).credit or 0 }}</td>
                 {% endfor %}
             </tr>
             <tr>
-                <td>Credit</td>
+                <td>Withdrawals</td>
                 {% for eid in envelopes.keys() %}
-                    <td>{{ env_data.get(eid, {}).get('credit', 0) }}</td>
+                    <td>{{ env_data.get(eid, {}).debit or 0 }}</td>
                 {% endfor %}
             </tr>
             <tr>
                 <td>Running Total</td>
                 {% for eid in envelopes.keys() %}
-                    <td>{{ env_data.get(eid, {}).get('running_total', 0) }}</td>
+                    <td>{{ env_data.get(eid, {}).running_total or 0 }}</td>
                 {% endfor %}
             </tr>
-        {% endfor %}
-    </tbody>
-
-</table>
+        </tbody>
+    </table>
+{% endfor %}
 
 <div class="btn-group2">
     {{ nav.budgets_home(budget_id) }}
