@@ -1,32 +1,71 @@
 {% import "nav_macros.html" as nav %}
+{% extends "base.html" %}
+
+{% block title %}Select Envelope{% endblock %}
+
 {% block content %}
-    {% if envelopes %}
-        {% for envelope_name, data in envelopes.items() %}
-            <h3>
-                {{ envelope_name }}
-                {{ nav.envelope_edit(budget_id, data.id) }}
-            </h3>
-            <table border="1">
-                <tbody>
-                    {% for detail in data.details %}
-                        <tr>
-                            <td>{{ detail[0] }}</td>
-                            <td>{{ detail[1] }}</td>
-                            <td>{{ detail[2] }}</td>
-                            <td>{{ detail[3] }}</td>
-                        </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+<div class="home-container">
 
-        {% endfor %}
-    {% endif %}
-
-    <div class="btn-group2">
+    <!-- Top right navigation -->
+    <div class="header-links">
         {{ nav.envelopes_home(budget_id) }}
-    </div>
-
-    <div class="btn-group2">
+        {{ nav.home() }}
         {{ nav.logout() }}
     </div>
+
+    <!-- Main card -->
+    <div class="card">
+        <h1>Select Envelope</h1>
+
+        {% if envelopes %}
+            <form id="envelope-select-form">
+                <ul class="single-select-list">
+                    {% for envelope_name, data in envelopes.items() %}
+                        <li class="single-select-item">
+                            <label class="radio-row">
+                                <input
+                                    type="radio"
+                                    name="selected_envelope"
+                                    value="{{ data.id }}"
+                                    required
+                                >
+                                <span>{{ envelope_name }}</span>
+                            </label>
+                        </li>
+                    {% endfor %}
+                </ul>
+
+                <div class="btn-group">
+                    <button type="submit" class="btn submit-btn">
+                        Edit
+                    </button>
+                </div>
+            </form>
+        {% else %}
+            <p class="empty-state">
+                You don't have any envelopes yet.<br><br>
+                {{ nav.envelope_create(budget_id) }}
+            </p>
+        {% endif %}
+    </div>
+
+</div>
+
+<script>
+document.getElementById('envelope-select-form').addEventListener('submit', function(e) {
+    e.preventDefault(); // Prevent the normal form submission
+
+    // Find the selected envelope
+    const selected = document.querySelector('input[name="selected_envelope"]:checked');
+
+    if (selected) {
+        const envelopeId = selected.value;
+        // Redirect to the edit page for this envelope
+        window.location.href = `/budget/{{ budget_id }}/envelopes/${envelopeId}/edit`;
+    } else {
+        alert('Please select an envelope to edit.');
+    }
+});
+</script>
+
 {% endblock %}

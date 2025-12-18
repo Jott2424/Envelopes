@@ -1,37 +1,67 @@
 {% import "nav_macros.html" as nav %}
+{% extends "base.html" %}
+
+{% block title %}Payment Sources{% endblock %}
+
 {% block content %}
-    <h1>Payment Sources</h1>
+<div class="home-container">
 
-    {% if payment_sources %}
-        <table border="1">
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Name</th>
-                    <th>Action</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for source in payment_sources %}
-                    <tr>
-                        <td>{{ source[0] }}</td>
-                        <td>{{ source[1] }}</td>
-                        <td>
-                            {{ nav.payment_sources_edit(budget_id, source[0]) }}
-                        </td>
-                    </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    {% else %}
-        <p>No payment sources found for this budget.</p>
-    {% endif %}
-
-    <div class="btn-group2">
+    <!-- Top right navigation -->
+    <div class="header-links">
         {{ nav.payment_sources_home(budget_id) }}
-    </div>
-
-    <div class="btn-group2">
+        {{ nav.home() }}
         {{ nav.logout() }}
     </div>
+
+    <!-- Main card -->
+    <div class="card">
+        <h1>Select Payment Source</h1>
+
+        {% if payment_sources %}
+            {% call nav.budget_select_default_post(budget_id) %}
+
+                <ul class="single-select-list">
+                    {% for source in payment_sources %}
+                        <li class="single-select-item">
+                            <label class="radio-row">
+                                <input
+                                    type="radio"
+                                    name="selected_source"
+                                    value="{{ source[0] }}"
+                                    required
+                                >
+                                <span>{{ source[1] }}</span>
+                            </label>
+                        </li>
+                    {% endfor %}
+                </ul>
+
+                <div class="btn-group">
+                    <button type="submit" class="btn submit-btn">
+                        Edit
+                    </button>
+                </div>
+
+            {% endcall %}
+        {% else %}
+            <p class="empty-state">
+                No payment sources found for this budget.
+            </p>
+        {% endif %}
+    </div>
+
+</div>
+
+<script>
+document.querySelector('form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const selected = document.querySelector('input[name="selected_source"]:checked');
+    if (selected) {
+        const id = selected.value;
+        window.location.href = `${id}/edit`;
+    } else {
+        alert('Please select a payment source to edit.');
+    }
+});
+</script>
 {% endblock %}

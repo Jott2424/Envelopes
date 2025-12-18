@@ -1,12 +1,32 @@
 {% import "nav_macros.html" as nav %}
+{% extends "base.html" %}
+
+{% block title %}Create Envelope{% endblock %}
+
 {% block content %}
-<h1 class="getting-started-title">Create A Payment Source!</h1>
-<div class="container">
-    <form method="POST">
-        <label for="Name">Payment Source Name</label>
-        <textarea id="Name" name="payment_source_name" rows="1"></textarea>
-        <button type="submit">Create Payment Source</button>
-    </form>
-</div>
-{{ nav.payment_sources_home(budget_id) }}
+<div class="home-container">
+
+    <!-- Top navigation -->
+    <div class="header-links">
+        {{ nav.payment_sources_home(budget_id) }}
+        {{ nav.home() }}
+        {{ nav.logout() }}
+    </div>
+    <div class="card">
+        <h1 class="home-title">Create A Payment Source!</h1>
+            <form method="POST">
+                <div class="form-group">
+                <label for="Name">Payment Source Name</label>
+                <input
+                    type="text"
+                    id="Name"
+                    name="payment_source_name"
+                    required
+                >
+            </div>
+                <button type="submit" class="btn submit-btn">
+                    Create Payment Source
+                </button>
+            </form>
+    </div>
 {% endblock %}

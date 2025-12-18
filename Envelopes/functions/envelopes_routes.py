@@ -112,13 +112,19 @@ def envelopes_edit(budget_id, envelope_id):
         cur = conn.cursor()
 
         cur.execute(
+            queries.GET_ENVELOPE_NAME_BY_PK,(envelope_id,))
+        envelope_name = cur.fetchone()[0]
+        print(envelope_name)
+
+        cur.execute(
             queries.GET_ENVELOPE_NAME_AND_TRANSACTION_FIELDS_EXCLUDING_AMOUNT_BY_BUDGET_AND_ENVELOPE_ID,(budget_id, envelope_id))
         rows = cur.fetchall()
+
 
         fields = []
         for r in rows:
             fields.append({
-                "envelope_name": r[0],
+                "envelope_name": envelope_name,
                 "id": r[1],
                 "budget_id": r[2],
                 "envelope_id": r[3],
@@ -135,6 +141,7 @@ def envelopes_edit(budget_id, envelope_id):
             "envelopes_edit.html",
             budget_id=budget_id,
             envelope_id=envelope_id,
+            envelope_name=envelope_name,
             fields=fields
         )        
 

@@ -1,82 +1,95 @@
 {% import "nav_macros.html" as nav %}
+{% extends "base.html" %}
+
+{% block title %}Create Envelope{% endblock %}
+
 {% block content %}
+<div class="home-container">
 
-<h1>Create An Envelope</h1>
+    <!-- Top navigation -->
+    <div class="header-links">
+        {{ nav.envelopes_home(budget_id) }}
+        {{ nav.home() }}
+        {{ nav.logout() }}
+    </div>
 
-<div class="container">
-    <form method="POST" id="envelope-form">
+    <div class="card">
+        <h1>Create an Envelope</h1>
 
-        <!-- Envelope Name -->
-        <label for="Name">Envelope Name</label>
-        <textarea
-            id="Name"
-            name="envelope_name"
-            rows="1"
-            required
-        ></textarea>
+        <form method="POST" id="envelope-form">
 
-        <hr>
+            <!-- Envelope Name -->
+            <div class="form-group">
+                <label for="Name">Envelope Name</label>
+                <input
+                    type="text"
+                    id="Name"
+                    name="envelope_name"
+                    required
+                >
+            </div>
 
-        <!-- ========================= -->
-        <!-- Always Tracked Fields -->
-        <!-- ========================= -->
+            <hr>
 
-        <h3>Always Tracked (Automatically)</h3>
+            <!-- Always Tracked -->
+            <h3>Always Tracked (Automatically)</h3>
 
-        <!-- DATE -->
-        <div class="tracker-row" style="opacity:0.6; display:flex; gap:10px; margin-bottom:10px;">
-            <input type="text" value="Date" disabled style="width:200px;">
-            <select disabled><option>Date</option></select>
-            <label><input type="checkbox" checked disabled> Required</label>
-        </div>
+            <div class="tracker-row disabled">
+                <input type="text" value="Date" disabled>
+                <select disabled><option>Date</option></select>
+                <label><input type="checkbox" checked disabled> Required</label>
+            </div>
 
-        <!-- MERCHANT -->
-        <div class="tracker-row" style="opacity:0.6; display:flex; gap:10px; margin-bottom:10px;">
-            <input type="text" value="Merchant" disabled style="width:200px;">
-            <select disabled><option>Text</option></select>
-            <label><input type="checkbox" checked disabled> Required</label>
-        </div>
+            <div class="tracker-row disabled">
+                <input type="text" value="Merchant" disabled>
+                <select disabled><option>Text</option></select>
+                <label><input type="checkbox" checked disabled> Required</label>
+            </div>
 
-        <!-- AMOUNT -->
-        <div class="tracker-row" style="opacity:0.6; display:flex; gap:10px; margin-bottom:10px;">
-            <input type="text" value="Amount" disabled style="width:200px;">
-            <select disabled><option>Numeric(10,2)</option></select>
-            <label><input type="checkbox" checked disabled> Required</label>
-        </div>
+            <div class="tracker-row disabled">
+                <input type="text" value="Amount" disabled>
+                <select disabled><option>Numeric(10,2)</option></select>
+                <label><input type="checkbox" checked disabled> Required</label>
+            </div>
 
-        <!-- DESCRIPTION -->
-        <div class="tracker-row" style="opacity:0.6; display:flex; gap:10px; margin-bottom:10px;">
-            <input type="text" value="Description" disabled style="width:200px;">
-            <select disabled><option>Text</option></select>
-            <label><input type="checkbox" disabled> Optional</label>
-        </div>
+            <div class="tracker-row disabled">
+                <input type="text" value="Description" disabled>
+                <select disabled><option>Text</option></select>
+                <label><input type="checkbox" disabled> Optional</label>
+            </div>
 
-        <!-- Hidden inserts for system fields -->
-        <input type="hidden" name="trackers[]" value="amount">
-        <input type="hidden" name="types[]" value="numeric(10,2)">
-        <input type="hidden" name="required[]" value="0">
+            <!-- Hidden inserts -->
+            <input type="hidden" name="trackers[]" value="amount">
+            <input type="hidden" name="types[]" value="numeric(10,2)">
+            <input type="hidden" name="required[]" value="0">
 
-        <input type="hidden" name="trackers[]" value="description">
-        <input type="hidden" name="types[]" value="text">
-        <input type="hidden" name="required[]" value="0">
+            <input type="hidden" name="trackers[]" value="description">
+            <input type="hidden" name="types[]" value="text">
+            <input type="hidden" name="required[]" value="0">
 
-        <hr>
+            <hr>
 
-        <!-- ========================= -->
-        <!-- Optional Fields -->
-        <!-- ========================= -->
+            <!-- Optional fields -->
+            <h3>Additional Envelope-Specific Data</h3>
+            <p class="form-hint">
+                Add extra fields for this envelope, or leave empty.
+            </p>
 
-        <h3>Additional Envelope-Specific Data (Optional)</h3>
-        <p style="font-size:0.9em; opacity:0.7;">
-            Add extra fields for this envelope, or leave empty.
-        </p>
+            <div id="trackers-container"></div>
 
-        <div id="trackers-container"></div>
+            <div class="btn-group">
+                <button type="button" class="btn secondary-btn" id="add-tracker">
+                    + Add Field
+                </button>
 
-        <button type="button" id="add-tracker">+ Add Field</button>
-        <br><br>
-        <button type="submit">Create Envelope</button>
-    </form>
+                <button type="submit" class="btn submit-btn">
+                    Create Envelope
+                </button>
+            </div>
+
+        </form>
+    </div>
+
 </div>
 
 <script>
@@ -89,10 +102,9 @@ document.getElementById("add-tracker").addEventListener("click", function () {
     const div = document.createElement("div");
 
     div.classList.add("tracker-row");
-    div.style = "margin-bottom:10px; display:flex; gap:10px; align-items:center;";
 
     div.innerHTML = `
-        <input type="text" name="trackers[]" placeholder="Field name" style="width:200px;">
+        <input type="text" name="trackers[]" placeholder="Field name">
         <select name="types[]">
             <option value="text">Text</option>
             <option value="numeric(10,2)">Numeric(10,2)</option>
@@ -102,21 +114,16 @@ document.getElementById("add-tracker").addEventListener("click", function () {
             <input type="checkbox" name="required[]" value="${trackerCount}">
             Required
         </label>
-        <button type="button" class="remove-tracker">–</button>
+        <button type="button" class="remove-btn">–</button>
     `;
 
     container.appendChild(div);
 });
 
 document.addEventListener("click", function (e) {
-    if (e.target.classList.contains("remove-tracker")) {
+    if (e.target.classList.contains("remove-btn")) {
         e.target.closest(".tracker-row").remove();
     }
 });
 </script>
-
-<div class="btn-group2">
-    {{ nav.envelopes_home(budget_id) }}
-</div>
-
 {% endblock %}

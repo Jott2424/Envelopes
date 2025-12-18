@@ -45,6 +45,17 @@ body {
     background-color: #818181;
 }
 
+/* delete Button */
+.delete-btn {
+    background-color: #e74c3c;
+    color: white;
+    margin-top: 20px;
+    font-weight: bold;
+}
+.delete-btn:hover {
+    background-color: #c0392b; /* darker red on hover */
+}
+
 /* Logout button (light grey) */
 .grey-btn {
     background-color: #e0e0e0;
@@ -98,4 +109,83 @@ body {
 .radio-row:hover {
     background-color: #f5f8ff;
     border-color: #007bff;
+}
+
+/* ---------- Forms ---------- */
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 6px;
+    font-weight: 600;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    font-size: 1rem;
+}
+
+.form-group input:focus {
+    outline: none;
+    border-color: #007bff;
+}
+
+/* ---------- Tracker rows ---------- */
+
+.tracker-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px;
+    margin-bottom: 10px;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+    background-color: #fafafa;
+}
+
+.tracker-row.disabled {
+    opacity: 0.6;
+}
+
+.tracker-row input[type="text"],
+.tracker-row select {
+    padding: 8px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+}
+
+.tracker-row label {
+    font-size: 0.9rem;
+}
+
+.remove-btn {
+    background: #dc3545;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 6px 10px;
+    cursor: pointer;
+}
+
+/* ---------- Buttons ---------- */
+
+.secondary-btn {
+    background-color: #e0e0e0;
+    color: #333;
+}
+
+.secondary-btn:hover {
+    background-color: #cfcfcf;
+}
+
+.form-hint {
+    font-size: 0.9rem;
+    color: #666;
+    margin-bottom: 16px;
 }

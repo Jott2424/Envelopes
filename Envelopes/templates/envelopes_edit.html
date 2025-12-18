@@ -1,157 +1,103 @@
 {% import "nav_macros.html" as nav %}
+{% extends "base.html" %}
+
+{% block title %}Edit Envelope{% endblock %}
+
 {% block content %}
+<div class="home-container">
 
-<h1>Edit Envelope</h1>
+    <!-- Top right navigation -->
+    <div class="header-links">
+        {{ nav.envelopes_home(budget_id) }}
+        {{ nav.home() }}
+        {{ nav.logout() }}
+    </div>
 
-<div class="container">
-    <form method="POST" id="envelope-form">
+    <!-- Main card -->
+    <div class="card">
+        <h1>Edit Envelope</h1>
 
-        <!-- Envelope Name -->
-        <label for="Name">Envelope Name</label>
-        <input 
-            id="Name" 
-            name="envelope_name" 
-            type="text"
-            value="{{ fields[0].envelope_name }}"
-            style="width:250px;"
-        >
+        <form method="POST" id="envelope-form">
 
-        <hr>
-        <h3>Always Tracked (Automatically)</h3>
-
-        <!-- DATE -->
-        <div class="tracker-row"
-            style="margin-bottom:10px; display:flex; gap:10px; align-items:center; opacity:0.6;">
-            <input type="text" value="Date" style="width:200px;" disabled>
-            <select disabled>
-                <option>Date</option>
-            </select>
-            <label>
-                <input type="checkbox" checked disabled>
-                Required
-            </label>
-        </div>
-
-        <!-- MERCHANT -->
-        <div class="tracker-row"
-            style="margin-bottom:10px; display:flex; gap:10px; align-items:center; opacity:0.6;">
-            <input type="text" value="Merchant" style="width:200px;" disabled>
-            <select disabled>
-                <option>Text</option>
-            </select>
-            <label>
-                <input type="checkbox" checked disabled>
-                Required
-            </label>
-        </div>
-        
-        <!-- AMOUNT -->
-        <div class="tracker-row"
-            style="margin-bottom:10px; display:flex; gap:10px; align-items:center; opacity:0.6;">
-            <input type="text" value="Amount" style="width:200px;" disabled>
-            <select disabled>
-                <option>Numeric(10,2)</option>
-            </select>
-            <label>
-                <input type="checkbox" checked disabled>
-                Required
-            </label>
-        </div>
-
-        <!-- DESCRIPTION -->
-        <div class="tracker-row"
-            style="margin-bottom:10px; display:flex; gap:10px; align-items:center; opacity:0.6;">
-            <input type="text" value="Description" style="width:200px;" disabled>
-            <select disabled>
-                <option>Text</option>
-            </select>
-            <label>
-                <input type="checkbox" checked disabled>
-                Required
-            </label>
-        </div>
-
-        <!-- Hidden inputs so AMOUNT and DESCRIPTION remain persisted -->
-        <input type="hidden" name="trackers[]" value="amount">
-        <input type="hidden" name="types[]" value="numeric(10,2)">
-        <input type="hidden" name="required[]" value="0">
-
-        <input type="hidden" name="trackers[]" value="description">
-        <input type="hidden" name="types[]" value="text">
-        <input type="hidden" name="required[]" value="0">
-
-        <hr>
-
-        <h3>Edit What This Envelope Tracks</h3>
-
-        <div id="trackers-container">
-
-            {% for field in fields %}
-            <div class="tracker-row"
-                 data-id="{{ field.id }}"
-                 style="margin-bottom:10px; display:flex; gap:10px; align-items:center;">
-
-                <!-- Field name -->
+            <!-- Envelope Name -->
+            <div class="form-group">
+                <label for="Name">Envelope Name</label>
                 <input 
-                    type="text" 
-                    name="trackers[]" 
-                    value="{{ field.field_name }}" 
-                    style="width:200px;"
+                    id="Name" 
+                    name="envelope_name" 
+                    type="text"
+                    class="form-control"
+                    value="{{ envelope_name }}"
+                    required
                 >
+            </div>
 
-                <!-- Type -->
-                <select name="types[]">
-                    <option value="text" {% if field.field_type == 'text' %}selected{% endif %}>Text</option>
-                    <option value="numeric(10,2)" {% if field.field_type == 'numeric(10,2)' %}selected{% endif %}>Numeric(10,2)</option>
-                    <option value="date" {% if field.field_type == 'date' %}selected{% endif %}>Date</option>
-                </select>
+            <hr>
 
-                <!-- Required checkbox -->
-                <label>
-                    <input 
-                        type="checkbox" 
-                        name="required[]" 
-                        value="{{ loop.index0 }}"
-                        {% if field.is_required %}checked{% endif %}
-                    >
-                    Required
-                </label>
-
-                <!-- Remove button -->
-                <button 
-                    type="button" 
-                    class="remove-tracker"
-                    style="background:red; color:white; border:none; padding:4px 8px; cursor:pointer;"
-                >–</button>
-
+            <!-- Always Tracked Fields -->
+            <h3>Always Tracked (Automatically)</h3>
+            {% for name, type_name in [('Date','Date'), ('Merchant','Text'), ('Amount','Numeric(10,2)'), ('Description','Text')] %}
+            <div class="tracker-row disabled">
+                <input type="text" value="{{ name }}" disabled>
+                <select disabled><option>{{ type_name }}</option></select>
+                <label><input type="checkbox" checked disabled> Required</label>
             </div>
             {% endfor %}
 
-        </div>
+            <!-- Hidden system fields -->
+            <input type="hidden" name="trackers[]" value="amount">
+            <input type="hidden" name="types[]" value="numeric(10,2)">
+            <input type="hidden" name="required[]" value="0">
+            <input type="hidden" name="trackers[]" value="description">
+            <input type="hidden" name="types[]" value="text">
+            <input type="hidden" name="required[]" value="0">
 
-        <button type="button" id="add-tracker">+ Add Another</button>
-        <button type="submit">Save Changes</button>
-        
-        {{ nav.envelope_edit_delete(budget_id, envelope_id) }}
+            <hr>
 
-    </form>
+            <!-- User-defined fields -->
+            <h3>Edit What This Envelope Tracks</h3>
+            <p class="form-note">Add, remove, or update fields for this envelope.</p>
+
+            <div id="trackers-container">
+                {% for field in fields %}
+                <div class="tracker-row" data-id="{{ field.id }}">
+                    <input type="text" name="trackers[]" value="{{ field.field_name }}">
+                    <select name="types[]">
+                        <option value="text" {% if field.field_type == 'text' %}selected{% endif %}>Text</option>
+                        <option value="numeric(10,2)" {% if field.field_type == 'numeric(10,2)' %}selected{% endif %}>Numeric(10,2)</option>
+                        <option value="date" {% if field.field_type == 'date' %}selected{% endif %}>Date</option>
+                    </select>
+                    <label>
+                        <input type="checkbox" name="required[]" value="{{ loop.index0 }}" {% if field.is_required %}checked{% endif %}>
+                        Required
+                    </label>
+                    <button type="button" class="btn remove-btn">–</button>
+                </div>
+                {% endfor %}
+            </div>
+
+            <div class="btn-group">
+                <button type="button" id="add-tracker" class="btn secondary-btn">+ Add Field</button>
+                <button type="submit" class="btn submit-btn">Save Changes</button>
+            </div>
+
+            {{ nav.envelope_edit_delete(budget_id, envelope_id) }}
+
+        </form>
+    </div>
 </div>
 
 <script>
-let trackerCount = {{ fields|length }};
+let trackerCount = {{ fields|length if fields else 0 }};
 
-// Add new tracker row
+// Add new tracker
 document.getElementById("add-tracker").addEventListener("click", function() {
     trackerCount++;
-
     const container = document.getElementById("trackers-container");
-
     const div = document.createElement("div");
     div.classList.add("tracker-row");
-    div.style = "margin-bottom:10px; display:flex; gap:10px; align-items:center;";
-
     div.innerHTML = `
-        <input type="text" name="trackers[]" placeholder="Tracker ${trackerCount}" style="width:200px;">
+        <input type="text" name="trackers[]" placeholder="Field ${trackerCount}">
         <select name="types[]">
             <option value="text">Text</option>
             <option value="numeric(10,2)">Numeric(10,2)</option>
@@ -161,22 +107,17 @@ document.getElementById("add-tracker").addEventListener("click", function() {
             <input type="checkbox" name="required[]" value="${trackerCount - 1}">
             Required
         </label>
-        <button type="button" class="remove-tracker" style="background:red; color:white; border:none; padding:4px 8px; cursor:pointer;">–</button>
+        <button type="button" class="btn remove-btn">–</button>
     `;
-
     container.appendChild(div);
 });
 
-// Remove tracker rows
+// Remove tracker
 document.addEventListener("click", function(e) {
-    if (e.target.classList.contains("remove-tracker")) {
-        e.target.parentElement.remove();
+    if (e.target.classList.contains("remove-btn")) {
+        e.target.closest(".tracker-row").remove();
     }
 });
 </script>
-
-<div class="btn-group2">
-  {{ nav.envelopes_home(budget_id) }}
-</div>
 
 {% endblock %}

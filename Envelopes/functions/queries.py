@@ -26,6 +26,7 @@ GET_RECEIPTS_AND_PAYMENT_SOURCES_BY_BUDGETS_ID = "SELECT r.pk_receipts_id, r.des
 GET_RECEIPT_TEMPLATES_BY_RECEIPT_TEMPLATES_ID = "SELECT pk_receipt_templates_id, fk_payment_sources_id, debit_or_credit, merchant, description FROM receipt_templates WHERE pk_receipt_templates_id = %s"
 GET_TRANSACTION_TEMPLATES_BY_RECEIPT_TEMPLATES_ID = "SELECT fk_envelopes_id AS envelope_id, details FROM transaction_templates WHERE fk_receipt_templates_id = %s ORDER BY pk_transaction_templates_id"
 GET_TRANSACTIONS_BY_RECEIPT_ID = "SELECT fk_envelopes_id, details FROM transactions WHERE fk_receipts_id = %s ORDER BY pk_transactions_id"
+GET_ENVELOPE_NAME_BY_PK = "SELECT name FROM envelopes WHERE pk_envelopes_id = %s"
 
 ########### Put ###########
 INSERT_INTO_ENVELOPES = "INSERT INTO envelopes (fk_budgets_id, name) VALUES (%s, %s)"
