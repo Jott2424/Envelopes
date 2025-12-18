@@ -11,7 +11,7 @@ body {
 
 
 /********** BUTTONS **********/
-/********** All Buttons **********/
+/* all */
 .btn {
     text-decoration: none;
     padding: 14px 24px;
@@ -37,23 +37,65 @@ body {
     background-color: #0056b3;
 }
 
-/* Logout button (grey) */
+/* Submit Buttons */
+.submit-btn {
+    background-color: #a0a0a0;
+}
+.submit-btn:hover {
+    background-color: #818181;
+}
+
+/* Logout button (light grey) */
 .grey-btn {
     background-color: #e0e0e0;
     color: #333;
 }
-
 .grey-btn:hover {
     background-color: #bdbdbd;
 }
 
+/********** CONTAINERS **********/
 /* Home page container */
 .home-container {
     text-align: center;
     margin-top: 80px;
 }
-
 .home-title {
     font-size: 2em;
     margin-bottom: 30px;
+}
+
+/********** CARDS **********/
+.card {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 24px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+.single-select-list {
+    list-style: none;
+    padding: 0;
+    margin: 20px 0;
+}
+
+.single-select-item {
+    margin-bottom: 12px;
+}
+
+.radio-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 16px;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+    cursor: pointer;
+}
+
+.radio-row:hover {
+    background-color: #f5f8ff;
+    border-color: #007bff;
 }

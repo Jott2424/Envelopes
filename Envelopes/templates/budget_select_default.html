@@ -1,25 +1,55 @@
 {% import "nav_macros.html" as nav %}
+{% extends "base.html" %}
+
+{% block title %}Default Budget Selection{% endblock %}
+
 {% block content %}
-<body>
-    <h1>Budget Selection</h1>
+<div class="home-container">
 
-    {% if budgets %}
-        {% call nav.budget_select_default_post(budget_id) %}
-            <ul class="budget-list">
-                {% for budget in budgets %}
-                    <li class="budget-item">
-                        <input type="radio" name="selected_budget" value="{{ budget[0] }}" required>
-                        <label>{{ budget[1] }}</label>
-                    </li>
-                {% endfor %}
-            </ul>
+    <!-- Top right navigation -->
+    <div class="header-links">
+        {{ nav.budget_settings(budget_id) }}
+        {{ nav.home() }}
+        {{ nav.logout() }}
+    </div>
 
-            <button type="submit">Continue</button>
-        {% endcall %}
-    {% else %}
-        <p>You don't have any budgets yet.
-            {{ nav.budget_create(budget_id) }}
-        </p>
-    {% endif %}
-</body>
+    <!-- Main card -->
+    <div class="card">
+        <h1>Select Default Budget</h1>
+
+        {% if budgets %}
+            {% call nav.budget_select_default_post(budget_id) %}
+
+                <ul class="single-select-list">
+                    {% for budget in budgets %}
+                        <li class="single-select-item">
+                            <label class="radio-row">
+                                <input
+                                    type="radio"
+                                    name="selected_budget"
+                                    value="{{ budget[0] }}"
+                                    required
+                                >
+                                <span>{{ budget[1] }}</span>
+                            </label>
+                        </li>
+                    {% endfor %}
+                </ul>
+
+                <div class="btn-group">
+                    <button type="submit" class="btn submit-btn">
+                        Continue
+                    </button>
+                </div>
+
+            {% endcall %}
+        {% else %}
+            <p class="empty-state">
+                You don't have any budgets yet.<br><br>
+                {{ nav.budget_create(budget_id) }}
+            </p>
+        {% endif %}
+    </div>
+
+</div>
 {% endblock %}

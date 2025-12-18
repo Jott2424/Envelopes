@@ -10,8 +10,9 @@
         {{ nav.home() }}
         {{ nav.logout() }}
     </div>
-    <h1 class="home-title">Budgets Home</h1>
 
+    <h1 class="home-title">Budgets Home</h1>
+    
     <div class="btn-group">
         {{ nav.ledger_overview(budget_id) }}
         {{ nav.receipts_home(budget_id) }}
@@ -19,8 +20,6 @@
     <div class="btn-group">
         {{ nav.envelopes_home(budget_id) }}
         {{ nav.payment_sources_home(budget_id) }}
-
-        
     </div>
 </div>
 {% endblock %}
