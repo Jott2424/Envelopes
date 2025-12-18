@@ -45,6 +45,10 @@
     <a href="{{ url_for('ledger_overview_route', budget_id=budget_id) }}">Ledger Overview</a>
 {% endmacro %}
 
+{% macro ledger_settings(budget_id) %}
+    <a href="{{ url_for('ledger_settings_route', budget_id=budget_id) }}">Ledger Settings</a>
+{% endmacro %}
+
 
 
 

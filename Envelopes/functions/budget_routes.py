@@ -60,7 +60,6 @@ def budget_select_default(budget_id):
     cur = conn.cursor()
 
     if request.method == 'POST':
-        print('post!')
         selected_budget_id = request.form.get('selected_budget')
         if not selected_budget_id:
             return "No budget selected", 400
@@ -162,16 +161,23 @@ def ledger_overview(budget_id):
     cur.execute("""
         SELECT details
         FROM user_settings
-        WHERE fk_users_id = %s AND setting='ledger_default_envelopes'
+        WHERE fk_users_id = %s AND setting='default_ledger_envelopes'
     """, (current_user.id,))
     row = cur.fetchone()
-    selected_envelopes = row[0] if row else None  # list of envelope ids
-    selected_envelopes = selected_envelopes or []
+
+    selected_envelopes = []
+    if row and row[0]:
+        # details is JSONB: {"envelope_ids": [2,5,7]}
+        details = row[0]
+        if "envelope_ids" in details:
+            selected_envelopes = [int(eid) for eid in details["envelope_ids"]]
 
     # Get all envelopes in budget if user has no default selection
     if not selected_envelopes:
-        cur.execute("SELECT pk_envelopes_id, name FROM envelopes WHERE fk_budgets_id=%s", (budget_id,))
+        cur.execute(queries.GET_ENVELOPES_BY_BUDGET_ID, (budget_id,))
         selected_envelopes = [r[0] for r in cur.fetchall()]
+
+
 
     # Query transactions grouped by week
     cur.execute(queries.GET_LEDGER_WEEKLY_SUMS, (
@@ -198,7 +204,6 @@ def ledger_overview(budget_id):
         running_totals[envelope_id] += credit - debit
 
     # Sort envelopes by name
-    print(selected_envelopes)
     cur.execute(queries.GET_ENVELOPE_NAMES_BY_ID, (selected_envelopes,))
     rows = cur.fetchall()
     cur_envelopes = {eid: name for eid, name in rows}

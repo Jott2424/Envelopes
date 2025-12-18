@@ -113,7 +113,8 @@ def first_time_init_db():
             pk_user_settings_id SERIAL PRIMARY KEY,
             fk_users_id INTEGER REFERENCES users(pk_users_id),
             setting TEXT NOT NULL,
-            details JSONB NOT NULL
+            details JSONB NOT NULL,
+            UNIQUE(fk_users_id, setting)  -- <-- ensures one setting per user
         );
     ''')
     conn.commit()
