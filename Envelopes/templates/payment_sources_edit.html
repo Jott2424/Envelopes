@@ -1,31 +1,38 @@
 {% import "nav_macros.html" as nav %}
+{% extends "base.html" %}
+
+{% block title %}Edit Envelope{% endblock %}
+
 {% block content %}
-    <h1>Edit Payment Source</h1>
+<div class="home-container">
 
-    <form method="POST">
-        <table border="1">
-            <tr>
-                <td>ID</td>
-                <td>{{ payment_source[0] }}</td>
-            </tr>
-            <tr>
-                <td>Name</td>
-                <td>
-                    <input type="text" name="name" value="{{ payment_source[1] }}" required>
-                </td>
-            </tr>
-        </table>
-
-        <div class="btn-group2">
-            <button type="submit" class="btn">Save</button>
-            <button type="submit" name="delete" value="1" class="btn" style="background-color: #c0392b;">
-                Delete
-            </button>
-            {{ nav.payment_sources_home(budget_id) }}
-        </div>
-    </form>
-
-    <div class="btn-group2">
+    <!-- Top right navigation -->
+    <div class="header-links">
+        {{ nav.payment_sources_home(budget_id) }}
+        {{ nav.home() }}
         {{ nav.logout() }}
     </div>
+
+        <!-- Main card -->
+    <div class="card">
+        <h1>Edit Payment Source</h1>
+
+    <form method="POST" id="payment-source-form">
+        <div class="form-group">
+            <label for="name">Payment Source</label>
+            <input 
+                id="name" 
+                name="payment_source_name" 
+                type="text"
+                class="form-control"
+                value="{{ payment_source[1] }}"
+                required
+            >
+        </div>
+
+        <div class="btn-group2">
+            <button type="submit" class="btn submit-btn">Save</button>
+            <button type="submit" name="delete" class="btn delete-btn">Delete</button>
+        </div>
+    </form>
 {% endblock %}

@@ -56,6 +56,10 @@ def payment_sources_edit(budget_id, payment_source_id):
 
     # POST: update or delete
     if "delete" in request.form:
+        cur.execute(queries.DROP_FROM_TRANSACTIONS_BY_PAYMENT_SOURCES_ID, (payment_source_id,))
+        cur.execute(queries.DROP_FROM_RECEIPTS_BY_PAYMENT_SOURCES_ID, (payment_source_id,))
+        cur.execute(queries.DROP_FROM_TRANSACTION_TEMPLATES_BY_PAYMENT_SOURCES_ID, (payment_source_id,))
+        cur.execute(queries.DROP_FROM_RECEIPT_TEMPLATES_BY_PAYMENT_SOURCES_ID, (payment_source_id,))
         cur.execute(queries.DROP_FROM_PAYMENT_SOURCES_BY_PAYMENT_SOURCES_ID, (payment_source_id,))
         conn.commit()
 
@@ -65,7 +69,8 @@ def payment_sources_edit(budget_id, payment_source_id):
         return redirect(url_for("payment_sources_view_route", budget_id=budget_id))
 
     # Otherwise UPDATE
-    new_name = request.form.get("name")
+    new_name = request.form.get("payment_source_name")
+    print(new_name)
 
     cur.execute(queries.UPDATE_PAYMENT_SOURCES_BY_PAYMENT_SOURCE_ID, (new_name, payment_source_id))
     conn.commit()
