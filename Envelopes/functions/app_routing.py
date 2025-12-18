@@ -82,6 +82,16 @@ def register_routes(app):
     @login_required
     def budget_settings_route(budget_id):
         return budget_routes.budget_settings(budget_id)
+    
+    @app.route('/budget/<int:budget_id>/ledger_overview', methods=['GET', 'POST'])
+    @login_required
+    def ledger_overview_route(budget_id):
+        return budget_routes.ledger_overview(budget_id)
+    
+    @app.route('/budget/<int:budget_id>/ledger_settings', methods=['GET', 'POST'])
+    @login_required
+    def ledger_settings_route(budget_id):
+        return budget_routes.ledger_settings(budget_id)
 
 ########################## ENVELOPES ##########################
     @app.route('/budget/<int:budget_id>/envelopes', methods=['GET', 'POST'])

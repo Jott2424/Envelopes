@@ -107,6 +107,15 @@ def first_time_init_db():
             details JSONB NOT NULL
         );
     ''')
+    #a user can select default settings for things like ledger overview
+    cur.execute('''
+        CREATE TABLE IF NOT EXISTS user_settings (
+            pk_user_settings_id SERIAL PRIMARY KEY,
+            fk_users_id INTEGER REFERENCES users(pk_users_id),
+            setting TEXT NOT NULL,
+            details JSONB NOT NULL
+        );
+    ''')
     conn.commit()
     cur.close()
     conn.close()

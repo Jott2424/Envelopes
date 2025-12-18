@@ -1,0 +1,13 @@
+{% block content %}
+<h1>Ledger Default Envelopes</h1>
+
+<form method="POST">
+    {% for eid, name in envelopes %}
+        <label>
+            <input type="checkbox" name="envelopes" value="{{ eid }}" {% if eid in selected %}checked{% endif %}>
+            {{ name }}
+        </label><br>
+    {% endfor %}
+    <button type="submit">Save</button>
+</form>
+{% endblock %}
