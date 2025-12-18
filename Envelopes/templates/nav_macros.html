@@ -83,8 +83,8 @@
     <a href="{{ url_for('receipts_create_route', budget_id=budget_id) }}">Create Receipt</a>
 {% endmacro %}
 
-{% macro receipts_edit(budget_id) %}
-    <a href="{{ url_for('receipts_edit_route', budget_id=budget_id) }}">Edit Receipt</a>
+{% macro receipts_edit(budget_id,receipt_id) %}
+    <a href="{{ url_for('receipts_edit_route', budget_id=budget_id, receipt_id=receipt_id) }}">Edit</a>
 {% endmacro %}
 
 {% macro receipts_delete(budget_id) %}
@@ -95,9 +95,10 @@
     <a href="{{ url_for('receipt_templates_view_route', budget_id=budget_id) }}">View Receipt Templates</a>
 {% endmacro %}
 
-{% macro receipt_templates_edit(budget_id) %}
-    <a href="{{ url_for('receipt_templates_edit_route', budget_id=budget_id) }}">Edit</a>
+{% macro receipt_templates_edit(budget_id,template_id) %}
+    <a href="{{ url_for('receipt_templates_edit_route', budget_id=budget_id, template_id=template_id) }}">Edit</a>
 {% endmacro %}
+
 
 
 

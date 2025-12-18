@@ -1,10 +1,10 @@
 {% import "nav_macros.html" as nav %}
 {% block content %}
 
-<h1>Receipt Templates</h1>
+<h1>Receipts</h1>
 
 <div class="container">
-    {% if templates %}
+    {% if receipts %}
         <table border="1" cellpadding="6" style="border-collapse:collapse; width:100%;">
             <thead>
                 <tr>
@@ -15,20 +15,20 @@
                 </tr>
             </thead>
             <tbody>
-                {% for t in templates %}
+                {% for t in receipts %}
                     <tr>
                         <td>{{ t.description }}</td>
                         <td>{{ t.payment_source_name }}</td>
                         <td>{{ t.debit_or_credit }}</td>
                         <td>
-                            {{ nav.receipt_templates_edit(budget_id,t.pk_receipt_templates_id) }}
+                            {{ nav.receipts_edit(budget_id, t.pk_receipts_id) }}
                         </td>
                     </tr>
                 {% endfor %}
             </tbody>
         </table>
     {% else %}
-        <p>No receipt templates found for this budget.</p>
+        <p>No receipts found for this budget.</p>
     {% endif %}
 </div>
 

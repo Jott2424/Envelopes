@@ -107,28 +107,6 @@ def first_time_init_db():
             details JSONB NOT NULL
         );
     ''')
-    # # table for storing presets for depositing money into envelopes
-    # cur.execute('''
-    #     CREATE TABLE IF NOT EXISTS user_envelope_deposit_presets (
-    #         pk_user_envelope_deposit_presets_id SERIAL PRIMARY KEY,
-    #         fk_budgets_id INTEGER REFERENCES budgets(pk_budgets_id),
-    #         fk_users_id INTEGER REFERENCES users(pk_users_id),
-    #         fk_envelopes_id INTEGER REFERENCES envelopes(pk_envelopes_id),
-    #         fk_account_id INTEGER REFERENCES accounts(pk_accounts_id),
-    #         amount NUMERIC(10,2) NOT NULL,
-    #         description TEXT
-    #     );
-    # ''')
-    # #table for storing settings for each user
-    # cur.execute('''
-    #     CREATE TABLE IF NOT EXISTS user_settings (
-    #         fk_users_id INTEGER REFERENCES users(pk_users_id),
-    #         settings TEXT NOT NULL,
-    #         PRIMARY KEY (fk_users_id, settings)
-    #     );
-    # ''')
-
-
     conn.commit()
     cur.close()
     conn.close()

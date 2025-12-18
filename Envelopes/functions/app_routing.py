@@ -128,24 +128,27 @@ def register_routes(app):
     @app.route('/budget/<int:budget_id>/receipts/<int:receipt_id>/edit', methods=['GET', 'POST'])
     @login_required
     def receipts_edit_route(budget_id,receipt_id):
-        return envelopes_routes.envelopes_edit(budget_id,receipt_id)
+        return receipts_routes.receipts_edit(budget_id,receipt_id)
 
     @app.route('/budget/<int:budget_id>/receipts/<int:receipt_id>/delete', methods=['POST'])
     @login_required
     def receipts_delete_route(budget_id, receipt_id):
-        return envelopes_routes.envelopes_delete(budget_id,receipt_id)
+        return receipts_routes.receipts_delete(budget_id,receipt_id)
     
     @app.route('/budget/<int:budget_id>/receipt_templates/view', methods=['GET'])
     @login_required
     def receipt_templates_view_route(budget_id):
         return receipts_routes.receipt_templates_view(budget_id)
 
-
-    # Edit a specific template
     @app.route('/budget/<int:budget_id>/receipt_templates/<int:template_id>/edit', methods=['GET', 'POST'])
     @login_required
     def receipt_templates_edit_route(budget_id, template_id):
         return receipts_routes.receipt_templates_edit(budget_id, template_id)
+    
+    @app.route('/budget/<int:budget_id>/receipt_templates/<int:template_id>/delete', methods=['GET', 'POST'])
+    @login_required
+    def receipt_templates_delete_route(budget_id, template_id):
+        return receipts_routes.receipt_templates_delete(budget_id, template_id)
 
 
 ########################## PAYMENT SOURCES ##########################

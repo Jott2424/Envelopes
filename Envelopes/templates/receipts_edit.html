@@ -1,30 +1,23 @@
 {% import "nav_macros.html" as nav %}
 {% block content %}
 
-<h1>Edit Receipt Template</h1>
+<h1>Edit Receipt</h1>
 
 <div class="container">
-
-    <!-- ========================= -->
-    <!-- MAIN EDIT / CREATE FORM -->
-    <!-- ========================= -->
-    <form method="POST" id="template-form">
+    <form method="POST" id="receipt-form">
 
         <!-- ========================= -->
         <!-- Receipt-level fields -->
         <!-- ========================= -->
 
-        <h3>Receipt Details</h3>
-
         <label for="merchant">Merchant</label>
-        <input type="text" id="merchant" name="merchant" value="{{ template.merchant }}" required>
+        <input type="text" id="merchant" name="merchant" value="{{ receipt.merchant }}" required>
 
         <h3>Payment Source</h3>
         <select name="payment_source_id" required>
             <option value="">--Select Payment Source--</option>
             {% for ps in payment_sources %}
-                <option value="{{ ps[0] }}"
-                        {% if ps[0] == template.fk_payment_sources_id %}selected{% endif %}>
+                <option value="{{ ps[0] }}" {% if ps[0] == receipt.fk_payment_sources_id %}selected{% endif %}>
                     {{ ps[1] }}
                 </option>
             {% endfor %}
@@ -32,16 +25,15 @@
 
         <h3>Transaction Type</h3>
         <select name="debit_or_credit" required>
-            <option value="debit" {% if template.debit_or_credit == 'debit' %}selected{% endif %}>
-                Debit (Money Out)
-            </option>
-            <option value="credit" {% if template.debit_or_credit == 'credit' %}selected{% endif %}>
-                Credit (Money In)
-            </option>
+            <option value="debit" {% if receipt.debit_or_credit=='debit' %}selected{% endif %}>Debit (Money Out)</option>
+            <option value="credit" {% if receipt.debit_or_credit=='credit' %}selected{% endif %}>Credit (Money In)</option>
         </select>
 
         <label>Description</label>
-        <input type="text" name="receipt_description" value="{{ template.description }}">
+        <input type="text" name="receipt_description" value="{{ receipt.description }}">
+
+        <label>Date</label>
+        <input type="date" name="transaction_date" value="{{ receipt.transaction_date }}">
 
         <hr>
 
@@ -56,33 +48,20 @@
         <hr>
 
         <!-- ========================= -->
-        <!-- Template actions -->
+        <!-- Save / Update Receipt -->
         <!-- ========================= -->
 
-        <button type="submit" name="action" value="save_template">
-            Save Template
-        </button>
-
-        <button type="submit" name="action" value="create_receipt">
-            Create Receipt from Template
-        </button>
-
+        <button type="submit">Save Changes</button>
     </form>
 
     <!-- ========================= -->
-    <!-- DELETE TEMPLATE (SEPARATE) -->
+    <!-- Delete Receipt -->
     <!-- ========================= -->
     <form method="POST"
-          action="{{ url_for('receipt_templates_delete_route',
-                             budget_id=budget_id,
-                             template_id=template.pk_receipt_templates_id) }}"
-          onsubmit="return confirm('Delete this receipt template? This cannot be undone.');"
-          style="margin-top:15px;">
-
-        <button type="submit"
-                style="background:red; color:white; padding:6px 10px; border:none; cursor:pointer;">
-            Delete Template
-        </button>
+          action="{{ url_for('receipts_delete_route', budget_id=budget_id, receipt_id=receipt.pk_receipts_id) }}"
+          onsubmit="return confirm('Delete this receipt? This cannot be undone.')"
+          style="margin-top:10px;">
+        <button type="submit" style="background:red; color:white;">Delete Receipt</button>
     </form>
 
 </div>
@@ -91,10 +70,9 @@
 const envelopeMap = {{ envelope_map | tojson }};
 let transactionCount = 0;
 
-// Create transaction rows from template
-function createTransactionRow(txn = null) {
+// Render transaction rows
+function createTransactionRow(txn=null) {
     transactionCount += 1;
-
     const container = document.getElementById("transactions-container");
     const row = document.createElement("div");
     row.classList.add("transaction-row");
@@ -102,7 +80,7 @@ function createTransactionRow(txn = null) {
     row.id = `transaction-${transactionCount}`;
 
     const envelopeOptions = Object.keys(envelopeMap).map(id => {
-        const selected = txn && txn.envelope_id == id ? "selected" : "";
+        const selected = txn && txn.envelope_id==id ? "selected" : "";
         return `<option value="${id}" ${selected}>${envelopeMap[id].name}</option>`;
     }).join("");
 
@@ -114,11 +92,8 @@ function createTransactionRow(txn = null) {
             <option value="">--Select Envelope--</option>
             ${envelopeOptions}
         </select>
-
         <div id="fields-${transactionCount}" style="margin-top:10px;"></div>
-
-        <button type="button"
-                class="remove-transaction"
+        <button type="button" class="remove-transaction"
                 style="margin-top:5px; background:red; color:white; border:none; padding:4px 6px; cursor:pointer;">
             – Remove
         </button>
@@ -126,13 +101,12 @@ function createTransactionRow(txn = null) {
 
     container.appendChild(row);
 
-    if (txn) {
+    if(txn){
         renderFields(transactionCount, txn.envelope_id, txn.details);
     }
 }
 
-// Render fields for a row
-function renderFields(rowNumber, envelopeId, values = null) {
+function renderFields(rowNumber, envelopeId, values=null) {
     const fieldDiv = document.getElementById(`fields-${rowNumber}`);
     fieldDiv.innerHTML = "";
 
@@ -147,9 +121,7 @@ function renderFields(rowNumber, envelopeId, values = null) {
         fieldDiv.innerHTML += `
             <div style="margin-bottom:8px;">
                 <label>Description</label>
-                <input type="text"
-                       name="transactions[${rowNumber}][description]"
-                       value="${val}">
+                <input type="text" name="transactions[${rowNumber}][description]" value="${val}">
             </div>
         `;
     }
@@ -157,43 +129,31 @@ function renderFields(rowNumber, envelopeId, values = null) {
     // Other fields
     fields.forEach(field => {
         if (field.name.toLowerCase() === "description") return;
-
         const inputName = `transactions[${rowNumber}][${field.name}]`;
-        const inputType =
-            field.type.startsWith("numeric") ? "number" :
-            field.type === "date" ? "date" : "text";
-
-        const val = values ? values[field.name] : "";
-
+        let inputType = field.type.startsWith("numeric") ? "number" : (field.type==="date"?"date":"text");
+        let val = values ? values[field.name] : "";
         fieldDiv.innerHTML += `
             <div style="margin-bottom:8px;">
-                <label>
-                    ${field.name.charAt(0).toUpperCase() + field.name.slice(1).replace(/_/g, " ")}
-                    ${field.required ? "*" : ""}
-                </label>
-                <input type="${inputType}"
-                       name="${inputName}"
-                       value="${val}"
-                       ${field.required ? "required" : ""}>
+                <label>${field.name.charAt(0).toUpperCase()+field.name.slice(1).replace(/_/g," ")}${field.required?" *":""}</label>
+                <input type="${inputType}" name="${inputName}" value="${val}" ${field.required?"required":""}>
             </div>
         `;
     });
 }
 
-// Preload template transactions
-{% for txn in template_transactions %}
-createTransactionRow({{ txn | tojson }});
+// Preload existing transactions
+{% for txn in receipt_transactions %}
+    createTransactionRow({{ txn | tojson }});
 {% endfor %}
 
 // Add transaction row
-document.getElementById("add-transaction")
-    .addEventListener("click", () => createTransactionRow());
+document.getElementById("add-transaction").addEventListener("click", () => createTransactionRow());
 
 // Remove transaction row
 document.addEventListener("click", function(e) {
-    if (e.target.classList.contains("remove-transaction")) {
+    if(e.target.classList.contains("remove-transaction")){
         const row = e.target.closest(".transaction-row");
-        if (row) row.remove();
+        if(row) row.remove();
     }
 });
 </script>
