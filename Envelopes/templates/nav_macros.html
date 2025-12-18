@@ -17,7 +17,7 @@
 {% endmacro %}
 
 {% macro budgets_home(budget_id) %}
-    <a href="{{ url_for('budget_home_route', budget_id=budget_id) }}" class="btn budget-btn">Budget</a>
+    <a href="{{ url_for('budget_home_route', budget_id=budget_id) }}" class="btn budget-btn">Budgets</a>
 {% endmacro %}
 
 {% macro home() %}
@@ -30,7 +30,7 @@
 {% endmacro %}
 
 {% macro budget_settings(budget_id) %}
-    <a href="{{ url_for('budget_settings_route', budget_id=budget_id) }}">Budget Settings</a>
+    <a href="{{ url_for('budget_settings_route', budget_id=budget_id) }}" class="btn budget-settings-btn">Budget Settings</a>
 {% endmacro %}
 
 {% macro budgets_invite_users(budget_id) %}
@@ -56,7 +56,7 @@
 
 
 {% macro ledger_overview(budget_id) %}
-    <a href="{{ url_for('ledger_overview_route', budget_id=budget_id) }}">Ledger Overview</a>
+    <a href="{{ url_for('ledger_overview_route', budget_id=budget_id) }}" class="btn ledger-overview-btn">Ledger Overview</a>
 {% endmacro %}
 
 {% macro ledger_settings(budget_id) %}
@@ -67,7 +67,7 @@
 
 
 {% macro envelopes_home(budget_id) %}
-    <a href="{{ url_for('envelopes_home_route', budget_id=budget_id) }}">Envelopes</a>
+    <a href="{{ url_for('envelopes_home_route', budget_id=budget_id) }}" class="btn envelopes-btn">Envelopes</a>
 {% endmacro %}
 
 {% macro envelopes_view(budget_id) %}
@@ -97,7 +97,7 @@
 
 
 {% macro receipts_home(budget_id) %}
-    <a href="{{ url_for('receipts_home_route', budget_id=budget_id) }}">Receipts</a>
+    <a href="{{ url_for('receipts_home_route', budget_id=budget_id) }}" class="btn receipts-btn">Receipts</a>
 {% endmacro %}
 
 {% macro receipts_view(budget_id) %}
@@ -128,7 +128,7 @@
 
 
 {% macro payment_sources_home(budget_id) %}
-    <a href="{{ url_for('payment_sources_home_route', budget_id=budget_id) }}">Payment Sources</a>
+    <a href="{{ url_for('payment_sources_home_route', budget_id=budget_id) }}" class="btn payment-sources-btn">Payment Sources</a>
 {% endmacro %}
 
 {% macro payment_sources_view(budget_id, payment_sources) %}

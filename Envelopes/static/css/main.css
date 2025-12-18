@@ -9,11 +9,14 @@ body {
     font-family: "Roboto", Arial, sans-serif;
 }
 
-/* General button styling */
+
+/********** BUTTONS **********/
+/********** All Buttons **********/
 .btn {
     text-decoration: none;
-    padding: 10px 20px;
-    border-radius: 8px;
+    padding: 14px 24px;
+    border-radius: 10px;
+    font-size: 1rem;
     color: white;
     font-weight: bold;
     display: inline-block;
@@ -21,14 +24,61 @@ body {
     cursor: pointer;
 }
 
-/* Budget / Home button (blue) */
+/* Button group spacing */
+.btn-group {
+    margin-top: 20px;
+}
+
+/* Budget Button */
 .budget-btn {
     background-color: #007bff;
 }
-
 .budget-btn:hover {
     background-color: #0056b3;
 }
+
+/* Ledger Overview Button */
+.ledger-overview-btn {
+    background-color: #007bff;
+}
+.ledger-overview-btn:hover {
+    background-color: #0056b3;
+}
+
+/* Envelopes Button */
+.envelopes-btn {
+    background-color: #007bff;
+}
+.envelopes-btn:hover {
+    background-color: #0056b3;
+}
+
+/* receipts Button */
+.receipts-btn {
+    background-color: #007bff;
+}
+.receipts-btn:hover {
+    background-color: #0056b3;
+}
+
+/* Payment Sources Button */
+.payment-sources-btn {
+    background-color: #007bff;
+}
+.payment-sources-btn:hover {
+    background-color: #0056b3;
+}
+
+/* Budget Settings Button */
+.budget-settings-btn {
+    background-color: #b9b9b9;
+    color: #333;
+}
+.budget-settings-btn:hover {
+    background-color: #929292;
+}
+
+
 
 /* Logout button (grey) */
 .logout-btn {
@@ -40,6 +90,18 @@ body {
     background-color: #bdbdbd;
 }
 
+
+
+
+
+
+/* Budget page container */
+.budget-home-container {
+    text-align: center;
+    margin-top: 80px;
+}
+
+
 /* Home page container */
 .home-container {
     text-align: center;
@@ -49,9 +111,4 @@ body {
 .home-title {
     font-size: 2em;
     margin-bottom: 30px;
-}
-
-/* Button group spacing */
-.btn-group {
-    margin-top: 20px;
 }

@@ -1,34 +1,27 @@
 {% import "nav_macros.html" as nav %}
+{% extends "base.html" %}
+
+{% block title %}Budgets{% endblock %}
+
 {% block content %}
 <div class="budget-home-container">
-    <h1 class="budget-home-title">Budget</h1>
+    <div class="header-links">
+        {{ nav.home() }}
+        {{ nav.budget_settings(budget_id) }}
+        {{ nav.logout() }}
+    </div>
+    <h1 class="budget-home-title">Budgets Home</h1>
 
     <div class="btn-group">
         {{ nav.ledger_overview(budget_id) }}
-    </div>
-
-    <div class="btn-group">
-        {{ nav.envelopes_home(budget_id) }}
-    </div>
-
-    <div class="btn-group">
         {{ nav.receipts_home(budget_id) }}
     </div>
-
     <div class="btn-group">
+        {{ nav.envelopes_home(budget_id) }}
+
         {{ nav.payment_sources_home(budget_id) }}
-    </div>
 
-    <div class="btn-group">
-        {{ nav.budget_settings(budget_id) }}
-    </div>
-
-    <div class="btn-group2">
-        {{ nav.home() }}
-    </div>
-
-    <div class="btn-group2">
-        {{ nav.logout() }}
+        
     </div>
 </div>
 {% endblock %}
