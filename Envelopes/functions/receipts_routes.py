@@ -3,7 +3,7 @@ from flask import render_template, request, redirect, url_for, flash
 from flask_login import current_user
 import json
 from decimal import Decimal
-from datetime import datetime
+from datetime import datetime, date
 
 # ----------------------------
 # Receipts Routes
@@ -176,7 +176,6 @@ def receipt_templates_view(budget_id):
     conn.close()
     return render_template("receipt_templates_view.html", budget_id=budget_id, templates=templates)
 
-
 def receipt_templates_edit(budget_id, template_id):
     conn = db_utils.get_db_connection()
     cur = conn.cursor()
@@ -205,7 +204,6 @@ def receipt_templates_edit(budget_id, template_id):
     # Load transactions
     cur.execute(queries.GET_TRANSACTION_TEMPLATES_BY_RECEIPT_TEMPLATES_ID, (template_id,))
     transaction_template_rows = cur.fetchall()
-    print(transaction_template_rows)
     template_transactions = [{"envelope_id": r[0], "details": r[1]} for r in transaction_template_rows]
 
     # Load envelope fields
@@ -224,6 +222,9 @@ def receipt_templates_edit(budget_id, template_id):
     for env in envelope_map.values():
         env["fields"].sort(key=lambda f: f["form_order"])
 
+    # Default current date for new receipts
+    current_date = date.today().isoformat()
+
     if request.method == "POST":
         action = request.form.get("action")
 
@@ -234,7 +235,8 @@ def receipt_templates_edit(budget_id, template_id):
             description = request.form.get("receipt_description")
 
             # Update template
-            cur.execute(queries.UPDATE_RECEIPT_TEMPLATES_BY_PK, (merchant, debit_or_credit, payment_source_id, description, template_id))
+            cur.execute(queries.UPDATE_RECEIPT_TEMPLATES_BY_PK,
+                        (merchant, debit_or_credit, payment_source_id, description, template_id))
 
             # Delete old transactions
             cur.execute(queries.DROP_FROM_TRANSACTION_TEMPLATES_BY_FK, (template_id,))
@@ -251,27 +253,34 @@ def receipt_templates_edit(budget_id, template_id):
 
             for txn in transactions.values():
                 envelope_id = txn.pop("envelope_id")
-                cur.execute(queries.INSERT_INTO_TRANSACTION_TEMPLATES, (template_id, envelope_id, json.dumps(txn)))
+                cur.execute(queries.INSERT_INTO_TRANSACTION_TEMPLATES,
+                            (template_id, envelope_id, json.dumps(txn)))
 
             conn.commit()
 
             if action == "create_receipt":
+                # Get the selected receipt date from form
+                receipt_date_str = request.form.get("receipt_date")
+                receipt_date = datetime.strptime(receipt_date_str, "%Y-%m-%d").date()
+
+                # Calculate total amount
                 total_amount = Decimal("0.00")
                 for txn in transactions.values():
                     amt = txn.get("amount")
                     if amt:
                         total_amount += Decimal(amt)
 
+                # Insert receipt
                 cur.execute(
                     queries.INSERT_INTO_RECEIPTS_RETURN_PK,
-                    (budget_id, current_user.id, payment_source_id, debit_or_credit, datetime.today().date(),
+                    (budget_id, current_user.id, payment_source_id, debit_or_credit, receipt_date,
                      merchant, total_amount, description)
                 )
                 receipt_id = cur.fetchone()[0]
 
+                # Insert transactions for the receipt
                 for envelope_id, txn in transactions.items():
                     envelope_id = int(envelope_id)  # keys come in as strings
-
                     txn_description = txn.pop("description", None)
                     if txn_description:
                         txn["description"] = txn_description
@@ -280,7 +289,6 @@ def receipt_templates_edit(budget_id, template_id):
                         queries.INSERT_INTO_TRANSACTIONS,
                         (receipt_id, envelope_id, json.dumps(txn))
                     )
-
 
                 conn.commit()
                 flash("Receipt created successfully from template.", "success")
@@ -293,7 +301,16 @@ def receipt_templates_edit(budget_id, template_id):
 
     cur.close()
     conn.close()
-    return render_template("receipt_templates_edit.html",budget_id=budget_id,template=template,template_transactions=template_transactions,payment_sources=payment_sources,envelope_map=envelope_map)
+    return render_template(
+        "receipt_templates_edit.html",
+        budget_id=budget_id,
+        template=template,
+        template_transactions=template_transactions,
+        payment_sources=payment_sources,
+        envelope_map=envelope_map,
+        current_date=current_date
+    )
+
 
 def receipt_templates_delete(budget_id, template_id):
     conn = db_utils.get_db_connection()

@@ -19,6 +19,10 @@
         <label for="merchant">Merchant</label>
         <input type="text" id="merchant" name="merchant" value="{{ template.merchant }}" required>
 
+        <!-- Only relevant for creating a receipt -->
+        <h3>Receipt Date</h3>
+        <input type="date" name="receipt_date" value="{{ current_date }}" required>
+
         <h3>Payment Source</h3>
         <select name="payment_source_id" required>
             <option value="">--Select Payment Source--</option>
