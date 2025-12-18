@@ -1,22 +1,21 @@
 {% import "nav_macros.html" as nav %}
+{% extends "base.html" %}
+
+{% block title %}Payment Sources{% endblock %}
+
 {% block content %}
-<div class="payment_source-home-container">
-    <h1 class="payment_source-home-title">Payment Sources</h1>
+<div class="home-container">
+    <div class="header-links">
+        {{ nav.budgets_home(budget_id) }}
+        {{ nav.home() }}
+        {{ nav.logout() }}
+    </div>
+    <h1 class="budget-home-title">Payment Sources</h1>
 
     <div class="btn-group">
         {{ nav.payment_sources_view(budget_id) }}
-    </div>
-
-    <div class="btn-group">
         {{ nav.payment_sources_create(budget_id) }}
     </div>
-
-    <div class="btn-group2">
-        {{ nav.budgets_home(budget_id) }}
-    </div>
-
-    <div class="btn-group2">
-        {{ nav.logout() }}
     </div>
 </div>
 {% endblock %}

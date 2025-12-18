@@ -1,20 +1,21 @@
 {% import "nav_macros.html" as nav %}
+{% extends "base.html" %}
+
+{% block title %}Envelopes{% endblock %}
+
 {% block content %}
-<div class="budget-home-container">
+<div class="home-container">
+    <div class="header-links">
+        {{ nav.budgets_home(budget_id) }}
+        {{ nav.home() }}
+        {{ nav.logout() }}
+    </div>
     <h1 class="budget-home-title">Envelopes</h1>
 
     <div class="btn-group">
         {{ nav.envelopes_view(budget_id) }}
-    </div>
-    <div class="btn-group">
         {{ nav.envelope_create(budget_id) }}
     </div>
-
-    <div class="btn-group2">
-        {{ nav.budgets_home(budget_id) }}
-    </div>
-    <div class="btn-group2">
-        {{ nav.home() }}
     </div>
 </div>
 {% endblock %}

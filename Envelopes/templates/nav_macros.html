@@ -57,11 +57,11 @@
 {% endmacro %}
 
 {% macro envelopes_view(budget_id) %}
-    <a href="{{ url_for('envelopes_view_route', budget_id=budget_id) }}">View Envelopes</a>
+    <a href="{{ url_for('envelopes_view_route', budget_id=budget_id) }}" class="btn nav-btn">View Envelopes</a>
 {% endmacro %}
 
 {% macro envelope_create(budget_id) %}
-    <a href="{{ url_for('envelopes_create_route', budget_id=budget_id) }}">Create An Envelope</a>
+    <a href="{{ url_for('envelopes_create_route', budget_id=budget_id) }}" class="btn nav-btn">Create An Envelope</a>
 {% endmacro %}
 
 {% macro envelope_edit(budget_id, envelope_id) %}
@@ -118,11 +118,11 @@
 {% endmacro %}
 
 {% macro payment_sources_view(budget_id, payment_sources) %}
-    <a href="{{ url_for('payment_sources_view_route', budget_id=budget_id, payment_sources=payment_sources) }}">View Payment Sources</a>
+    <a href="{{ url_for('payment_sources_view_route', budget_id=budget_id, payment_sources=payment_sources) }}" class="btn nav-btn">View Payment Sources</a>
 {% endmacro %}
 
 {% macro payment_sources_create(budget_id) %}
-    <a href="{{ url_for('payment_sources_create_route', budget_id=budget_id) }}">Create Payment Sources</a>
+    <a href="{{ url_for('payment_sources_create_route', budget_id=budget_id) }}" class="btn nav-btn">Create Payment Sources</a>
 {% endmacro %}
 
 {% macro payment_sources_edit(budget_id, payment_source_id) %}

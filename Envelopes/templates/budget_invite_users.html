@@ -1,25 +1,50 @@
 {% import "nav_macros.html" as nav %}
+{% extends "base.html" %}
+
+{% block title %}Default Budget Selection{% endblock %}
+
 {% block content %}
-<body>
-    <h1>User Selection</h1>
+<div class="home-container">
 
-    {% if users %}
-        {% call nav.budget_invite_users_post(budget_id) %}
-            <ul class="user-list">
-                {% for user in users %}
-                    <li class="user-item">
-                        <input type="radio" name="selected_user" value="{{ user[0] }}" required>
-                        <label>{{ user[1] }}</label>
-                    </li>
-                {% endfor %}
-            </ul>
+    <!-- Top right navigation -->
+    <div class="header-links">
+        {{ nav.budget_settings(budget_id) }}
+        {{ nav.home() }}
+        {{ nav.logout() }}
+    </div>
+    <!-- Main card -->
+    <div class="card">
+        <h1>Invite A User</h1>
+        {% if users %}
+            {% call nav.budget_invite_users_post(budget_id) %}
+                <ul class="single-select-list">
+                    {% for user in users %}
+                        <li class="single-select-item">
+                            <label class="radio-row">
+                                <input
+                                    type="radio"
+                                    name="selected_user"
+                                    value="{{ user[0] }}"
+                                    required
+                                >
+                                <span>{{ user[1] }}</span>
+                            </label>
+                        </li>
+                    {% endfor %}
+                </ul>
 
-            <button type="submit">Continue</button>
-        {% endcall %}
-    {% else %}
-        <p>You don't have any users to invite.
-            {{ nav.budgets_home(budget_id) }}
-        </p>
-    {% endif %}
-</body>
+                <div class="btn-group">
+                    <button type="submit" class="btn submit-btn">
+                        Continue
+                    </button>
+                </div>
+            {% endcall %}
+        {% else %}
+            <p class="empty-state">
+                You don't have any users yet.
+            </p>
+        {% endif %}
+    </div>
+
+</div>
 {% endblock %}
