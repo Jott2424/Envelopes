@@ -1,15 +1,29 @@
 {% macro home() %}
-    <a href="{{ url_for('home_route') }}">Home</a>
+    <a href="{{ url_for('home_route') }}" class="btn budget-btn">Home</a>
 {% endmacro %}
 
 {% macro logout() %}
-    <a href="{{ url_for('logout_route') }}">Logout</a>
+    <a href="{{ url_for('logout_route') }}" class="btn logout-btn">Logout</a>
 {% endmacro %}
 
 
 {% macro budgets_home(budget_id) %}
-    <a href="{{ url_for('budget_home_route', budget_id=budget_id) }}">Budget</a>
+    <a href="{{ url_for('budget_home_route', budget_id=budget_id) }}" class="btn budget-btn">Budget</a>
 {% endmacro %}
+
+
+{% macro home() %}
+    <a href="{{ url_for('home_route') }}" class="btn budget-btn">Home</a>
+{% endmacro %}
+
+{% macro budgets_home(budget_id) %}
+    <a href="{{ url_for('budget_home_route', budget_id=budget_id) }}" class="btn budget-btn">Budget</a>
+{% endmacro %}
+
+{% macro home() %}
+    <a href="{{ url_for('home_route') }}" class="btn budget-btn">Home</a>
+{% endmacro %}
+
 
 {% macro budget_create(budget_id) %}
     <a href="{{ url_for('budget_create_route', budget_id=budget_id) }}">Create A Budget</a>
