@@ -11,6 +11,8 @@
                     <th>Description</th>
                     <th>Payment Source</th>
                     <th>Type</th>
+                    <th>Transaction Date</th>
+                    <th>Amount</th>
                     <th>Actions</th>
                 </tr>
             </thead>
@@ -20,6 +22,8 @@
                         <td>{{ t.description }}</td>
                         <td>{{ t.payment_source_name }}</td>
                         <td>{{ t.debit_or_credit }}</td>
+                        <td>{{ t.transaction_date.strftime("%Y-%m-%d") if t.transaction_date else "" }}</td>
+                        <td>${{ "{:,.2f}".format(t.amount) }}</td>
                         <td>
                             {{ nav.receipts_edit(budget_id, t.pk_receipts_id) }}
                         </td>
