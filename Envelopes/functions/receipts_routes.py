@@ -150,18 +150,52 @@ def receipts_create(budget_id):
         payment_sources=payment_sources
     )
 
-
 def receipts_view(budget_id):
     conn = db_utils.get_db_connection()
     cur = conn.cursor()
 
-    cur.execute(queries.GET_RECEIPTS_AND_PAYMENT_SOURCES_BY_BUDGETS_ID, (budget_id,))
+    # Get optional filters from query params
+    start_date = request.args.get('start_date')  # "YYYY-MM-DD"
+    end_date = request.args.get('end_date')      # "YYYY-MM-DD"
+    payment_source_name = request.args.get('payment_source_name')  # exact or partial match
+
+    # Base query
+    query = queries.GET_RECEIPTS_AND_PAYMENT_SOURCES_BY_BUDGETS_ID
+    params = [budget_id]
+
+    # Dynamic filters
+    if start_date:
+        query += " AND r.transaction_date >= %s"
+        params.append(start_date)
+    if end_date:
+        query += " AND r.transaction_date <= %s"
+        params.append(end_date)
+    if payment_source_name:
+        query += " AND ps.name ILIKE %s"  # case-insensitive partial match
+        params.append(f"%{payment_source_name}%")
+
+    query += " ORDER BY r.transaction_date ASC"
+
+    cur.execute(query, params)
     columns = [desc[0] for desc in cur.description]
-    receipts = [dict(zip(columns, row)) for row in cur.fetchall()]  # Convert tuples to dicts
+    receipts = [dict(zip(columns, row)) for row in cur.fetchall()]
+
+    # Get all payment sources for filter dropdown
+    cur.execute("SELECT pk_payment_sources_id, name FROM payment_sources WHERE fk_budgets_id=%s", (budget_id,))
+    payment_sources = cur.fetchall()
 
     cur.close()
     conn.close()
-    return render_template("receipts_view.html", budget_id=budget_id, receipts=receipts)
+
+    return render_template(
+        "receipts_view.html",
+        budget_id=budget_id,
+        receipts=receipts,
+        start_date=start_date or "",
+        end_date=end_date or "",
+        payment_source_name=payment_source_name or "",
+        payment_sources=payment_sources
+    )
 
 
 def receipt_templates_view(budget_id):

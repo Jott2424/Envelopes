@@ -3,6 +3,22 @@
 
 <h1>Receipts</h1>
 
+<form method="get" id="filters-form">
+    Start Date:
+    <input type="date" name="start_date" value="{{ start_date }}" onchange="this.form.submit()">
+    End Date:
+    <input type="date" name="end_date" value="{{ end_date }}" onchange="this.form.submit()">
+
+    Payment Source:
+    <select name="payment_source_name" onchange="this.form.submit()">
+        <option value="">--All--</option>
+        {% for ps_id, ps_name in payment_sources %}
+            <option value="{{ ps_name }}" {% if ps_name == payment_source_name %}selected{% endif %}>{{ ps_name }}</option>
+        {% endfor %}
+    </select>
+</form>
+
+
 <div class="container">
     {% if receipts %}
         <table border="1" cellpadding="6" style="border-collapse:collapse; width:100%;">
