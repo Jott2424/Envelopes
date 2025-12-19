@@ -199,3 +199,58 @@ body {
     font-family: "Roboto", Arial, sans-serif;
     font-size: 0.95em;
 }
+
+/* ---------- Tables ---------- */
+.styled-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: "Roboto", Arial, sans-serif;
+}
+
+.styled-table thead tr {
+    background-color: #f2f2f2;
+    text-align: left;
+}
+
+.styled-table th,
+.styled-table td {
+    padding: 12px 10px;
+    border: 1px solid #ddd;
+}
+
+.styled-table tbody tr:nth-child(even) {
+    background-color: #fafafa;
+}
+
+.styled-table tbody tr:hover {
+    background-color: #f5f8ff;
+}
+
+/* ---------- Filters ---------- */
+.filters-form .form-group {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 10px;
+}
+
+.filters-form .form-group label {
+    font-weight: 600;
+    margin-bottom: 4px;
+}
+
+.filters-form .form-control,
+.filters-form .select-box {
+    padding: 6px 10px;
+    font-size: 0.95em;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    font-family: "Roboto", Arial, sans-serif;
+}
+
+/* Optional: flex row for filters */
+.filters-row {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+}

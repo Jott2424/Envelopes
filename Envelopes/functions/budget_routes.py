@@ -2,9 +2,10 @@ from functions import db_utils, queries
 
 from flask import render_template, request, redirect, url_for
 from flask_login import current_user
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 import json
 import calendar
+from calendar import monthrange
 
 def budget_home(budget_id):
     conn = db_utils.get_db_connection()
@@ -148,6 +149,7 @@ def budget_settings(budget_id):
     else:
         return render_template('budget_select_default.html')
 
+
 def ledger_overview(budget_id):
     conn = db_utils.get_db_connection()
     cur = conn.cursor()
@@ -157,7 +159,19 @@ def ledger_overview(budget_id):
     year = int(request.args.get('year', today.year))
     month = int(request.args.get('month', today.month))
 
-    # Get user-selected envelopes (from user_settings)
+    # --- Calculate first and last day of the month week-aligned ---
+    first_of_month = date(year, month, 1)
+    last_of_month = date(year, month, monthrange(year, month)[1])
+
+    # Days to subtract to get back to previous Sunday
+    days_to_sunday_start = (first_of_month.weekday() + 1) % 7
+    first_week_start = first_of_month - timedelta(days=days_to_sunday_start)
+
+    # Days to add to get to next Saturday
+    days_to_saturday_end = (6 - ((last_of_month.weekday() + 1) % 7))
+    last_week_end = last_of_month + timedelta(days=days_to_saturday_end)
+
+    # --- Get user-selected envelopes ---
     cur.execute("""
         SELECT details
         FROM user_settings
@@ -167,31 +181,41 @@ def ledger_overview(budget_id):
 
     selected_envelopes = []
     if row and row[0]:
-        # details is JSONB: {"envelope_ids": [2,5,7]}
         details = row[0]
         if "envelope_ids" in details:
             selected_envelopes = [int(eid) for eid in details["envelope_ids"]]
 
-    # Get all envelopes in budget if user has no default selection
     if not selected_envelopes:
         cur.execute(queries.GET_ENVELOPES_BY_BUDGET_ID, (budget_id,))
         selected_envelopes = [r[0] for r in cur.fetchall()]
 
-
-
-    # Query transactions grouped by week
+    # --- Query transactions grouped by week ---
     cur.execute(queries.GET_LEDGER_WEEKLY_SUMS, (
-    budget_id,  # for receipts filter
-    year, month,  # first %s-%s-01
-    year, month   # second %s-%s-01
+        budget_id,
+        first_week_start,
+        last_week_end
     ))
-    transactions = cur.fetchall()  # see query below
+    transactions = cur.fetchall()  # Each row: (week_label, fk_envelopes_id, debit, credit)
 
-    # Prepare data structure: {week_label: {envelope_id: {'debit': , 'credit': , 'running_total': } } }
+    # --- Helper to determine which month a week belongs to ---
+    def majority_month(week_label):
+        start_str, end_str = week_label.split(' - ')
+        week_start = date.fromisoformat(start_str)
+        week_end = date.fromisoformat(end_str)
+        week_days = [week_start + timedelta(days=i) for i in range(7)]
+        counts = {}
+        for d in week_days:
+            counts[d.month] = counts.get(d.month, 0) + 1
+        return max(counts, key=lambda k: counts[k])
+
+    # --- Prepare ledger structure ---
     ledger = {}
     running_totals = {eid: 0 for eid in selected_envelopes}
 
     for week_label, envelope_id, debit, credit in transactions:
+        # Only include weeks that belong mostly to the selected month
+        if majority_month(week_label) != month:
+            continue
         if envelope_id not in selected_envelopes:
             continue
         if week_label not in ledger:
@@ -203,21 +227,27 @@ def ledger_overview(budget_id):
         }
         running_totals[envelope_id] += credit - debit
 
-    # Sort envelopes by name
-    cur.execute(queries.GET_ENVELOPE_NAMES_BY_ID, (selected_envelopes,))
-    rows = cur.fetchall()
-    cur_envelopes = {eid: name for eid, name in rows}
+    # --- Get envelope names ---
+    if selected_envelopes:
+        cur.execute(queries.GET_ENVELOPE_NAMES_BY_ID, (selected_envelopes,))
+        rows = cur.fetchall()
+        cur_envelopes = {eid: name for eid, name in rows}
+    else:
+        cur_envelopes = {}
 
     cur.close()
     conn.close()
 
-    return render_template("ledger_overview.html",
-                        budget_id=budget_id,
-                        year=year,
-                        month=month,
-                        current_year=today.year,  # <--- add this
-                        envelopes=cur_envelopes,
-                        ledger=ledger)
+    # --- Render template ---
+    return render_template(
+        "ledger_overview.html",
+        budget_id=budget_id,
+        ledger=ledger,
+        envelopes=cur_envelopes,
+        year=year,
+        month=month,
+        current_year=today.year
+    )
 
 
 

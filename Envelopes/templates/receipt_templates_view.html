@@ -1,39 +1,49 @@
 {% import "nav_macros.html" as nav %}
+{% extends "base.html" %}
+
+{% block title %}Receipt Templates{% endblock %}
+
 {% block content %}
+<div class="home-container">
 
-<h1>Receipt Templates</h1>
+    <!-- Top right navigation -->
+    <div class="header-links">
+        {{ nav.receipts_home(budget_id) }}
+        {{ nav.home() }}
+        {{ nav.logout() }}
+    </div>
 
-<div class="container">
-    {% if templates %}
-        <table border="1" cellpadding="6" style="border-collapse:collapse; width:100%;">
-            <thead>
-                <tr>
-                    <th>Description</th>
-                    <th>Payment Source</th>
-                    <th>Type</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for t in templates %}
+    <!-- Page card -->
+    <div class="card">
+        <h1>Receipt Templates</h1>
+
+        {% if templates %}
+            <table class="styled-table">
+                <thead>
                     <tr>
-                        <td>{{ t.description }}</td>
-                        <td>{{ t.payment_source_name }}</td>
-                        <td>{{ t.debit_or_credit }}</td>
-                        <td>
-                            {{ nav.receipt_templates_edit(budget_id,t.pk_receipt_templates_id) }}
-                        </td>
+                        <th>Description</th>
+                        <th>Payment Source</th>
+                        <th>Type</th>
+                        <th>Actions</th>
                     </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    {% else %}
-        <p>No receipt templates found for this budget.</p>
-    {% endif %}
-</div>
+                </thead>
+                <tbody>
+                    {% for t in templates %}
+                        <tr>
+                            <td>{{ t.description }}</td>
+                            <td>{{ t.payment_source_name }}</td>
+                            <td>{{ t.debit_or_credit }}</td>
+                            <td>
+                                {{ nav.receipt_templates_edit(budget_id, t.pk_receipt_templates_id) }}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p>No receipt templates found for this budget.</p>
+        {% endif %}
 
-<div class="btn-group2">
-    {{ nav.receipts_home(budget_id) }}
+    </div>
 </div>
-
 {% endblock %}

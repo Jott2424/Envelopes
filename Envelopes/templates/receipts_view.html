@@ -1,59 +1,76 @@
 {% import "nav_macros.html" as nav %}
+{% extends "base.html" %}
+
+{% block title %}Receipts{% endblock %}
+
 {% block content %}
+<div class="home-container">
 
-<h1>Receipts</h1>
+    <!-- Top right navigation -->
+    <div class="header-links">
+        {{ nav.receipts_home(budget_id) }}
+        {{ nav.home() }}
+        {{ nav.logout() }}
+    </div>
 
-<form method="get" id="filters-form">
-    Start Date:
-    <input type="date" name="start_date" value="{{ start_date }}" onchange="this.form.submit()">
-    End Date:
-    <input type="date" name="end_date" value="{{ end_date }}" onchange="this.form.submit()">
+    <!-- Page card -->
+    <div class="card">
+        <h1>Receipts</h1>
 
-    Payment Source:
-    <select name="payment_source_name" onchange="this.form.submit()">
-        <option value="">--All--</option>
-        {% for ps_id, ps_name in payment_sources %}
-            <option value="{{ ps_name }}" {% if ps_name == payment_source_name %}selected{% endif %}>{{ ps_name }}</option>
-        {% endfor %}
-    </select>
-</form>
+        <!-- Filters -->
+        <form method="get" id="filters-form" class="filters-form">
+            <div class="filters-row">
+                <div class="form-group">
+                    <label>Start Date</label>
+                    <input type="date" name="start_date" value="{{ start_date }}" class="form-control" onchange="this.form.submit()">
+                </div>
+                <div class="form-group">
+                    <label>End Date</label>
+                    <input type="date" name="end_date" value="{{ end_date }}" class="form-control" onchange="this.form.submit()">
+                </div>
+                <div class="form-group">
+                    <label>Payment Source</label>
+                    <select name="payment_source_name" class="form-control select-box" onchange="this.form.submit()">
+                        <option value="">--All--</option>
+                        {% for ps_id, ps_name in payment_sources %}
+                            <option value="{{ ps_name }}" {% if ps_name == payment_source_name %}selected{% endif %}>{{ ps_name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+        </form>
 
-
-<div class="container">
-    {% if receipts %}
-        <table border="1" cellpadding="6" style="border-collapse:collapse; width:100%;">
-            <thead>
-                <tr>
-                    <th>Description</th>
-                    <th>Payment Source</th>
-                    <th>Type</th>
-                    <th>Transaction Date</th>
-                    <th>Amount</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for t in receipts %}
+        <!-- Receipts table -->
+        {% if receipts %}
+            <table class="styled-table">
+                <thead>
                     <tr>
-                        <td>{{ t.description }}</td>
-                        <td>{{ t.payment_source_name }}</td>
-                        <td>{{ t.debit_or_credit }}</td>
-                        <td>{{ t.transaction_date.strftime("%Y-%m-%d") if t.transaction_date else "" }}</td>
-                        <td>${{ "{:,.2f}".format(t.amount) }}</td>
-                        <td>
-                            {{ nav.receipts_edit(budget_id, t.pk_receipts_id) }}
-                        </td>
+                        <th>Description</th>
+                        <th>Payment Source</th>
+                        <th>Type</th>
+                        <th>Transaction Date</th>
+                        <th>Amount</th>
+                        <th>Actions</th>
                     </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    {% else %}
-        <p>No receipts found for this budget.</p>
-    {% endif %}
-</div>
+                </thead>
+                <tbody>
+                    {% for t in receipts %}
+                        <tr>
+                            <td>{{ t.description }}</td>
+                            <td>{{ t.payment_source_name }}</td>
+                            <td>{{ t.debit_or_credit }}</td>
+                            <td>{{ t.transaction_date.strftime("%Y-%m-%d") if t.transaction_date else "" }}</td>
+                            <td>${{ "{:,.2f}".format(t.amount) }}</td>
+                            <td>{{ nav.receipts_edit(budget_id, t.pk_receipts_id) }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p>No receipts found for this budget.</p>
+        {% endif %}
 
-<div class="btn-group2">
-    {{ nav.receipts_home(budget_id) }}
+    </div>
 </div>
 
 {% endblock %}
