@@ -124,16 +124,27 @@ body {
 }
 
 .form-group input {
-    width: 100%;
     padding: 12px;
     border-radius: 8px;
     border: 1px solid #ccc;
     font-size: 1rem;
+    position: relative;
 }
 
 .form-group input:focus {
     outline: none;
     border-color: #007bff;
+}
+
+.form-row {
+  margin-right: -5px;
+  margin-left: -5px;
+}
+
+.form-hint {
+    font-size: 0.9rem;
+    color: #666;
+    margin-bottom: 16px;
 }
 
 /* ---------- Tracker rows ---------- */
@@ -173,19 +184,18 @@ body {
     cursor: pointer;
 }
 
-/* ---------- Buttons ---------- */
-
-.secondary-btn {
-    background-color: #e0e0e0;
-    color: #333;
+.transaction-row .fields {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
 }
 
-.secondary-btn:hover {
-    background-color: #cfcfcf;
-}
 
-.form-hint {
-    font-size: 0.9rem;
-    color: #666;
-    margin-bottom: 16px;
+
+/* ---------- Box ---------- */
+.select-box {
+    border-radius: 8px;
+    padding: 6px 10px;
+    font-family: "Roboto", Arial, sans-serif;
+    font-size: 0.95em;
 }

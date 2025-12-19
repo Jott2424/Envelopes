@@ -1,23 +1,22 @@
 {% import "nav_macros.html" as nav %}
-{% block content %}
-<div class="receipts-home-container">
-    <h1 class="receipts-home-title">Receipts</h1>
+{% extends "base.html" %}
 
+{% block title %}Budgets{% endblock %}
+
+{% block content %}
+<div class="home-container">
+    <div class="header-links">
+        {{ nav.budgets_home(budget_id) }}
+        {{ nav.home() }}
+        {{ nav.logout() }}
+    </div>
+
+    <h1 class="home-title">Receipts Home</h1>
+       
     <div class="btn-group2">
         {{ nav.receipts_view(budget_id) }}
-    </div>
-    <div class="btn-group2">
         {{ nav.receipt_templates_view(budget_id) }}
-    </div>
-    <div class="btn-group2">
         {{ nav.receipts_create(budget_id) }}
-    </div>
-
-    <div class="btn-group2">
-        {{ nav.budgets_home(budget_id) }}
-    </div>
-    <div class="btn-group2">
-        {{ nav.home() }}
     </div>
 </div>
 {% endblock %}

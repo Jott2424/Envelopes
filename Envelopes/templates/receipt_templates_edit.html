@@ -1,108 +1,111 @@
 {% import "nav_macros.html" as nav %}
+{% extends "base.html" %}
+
+{% block title %}Edit Receipt Template{% endblock %}
+
 {% block content %}
+<div class="home-container">
 
-<h1>Edit Receipt Template</h1>
+    <!-- Top right navigation -->
+    <div class="header-links">
+        {{ nav.receipts_home(budget_id) }}
+        {{ nav.home() }}
+        {{ nav.logout() }}
+    </div>
 
-<div class="container">
+    <!-- Main card -->
+    <div class="card">
+        <h1>Edit Receipt Template</h1>
 
-    <!-- ========================= -->
-    <!-- MAIN EDIT / CREATE FORM -->
-    <!-- ========================= -->
-    <form method="POST" id="template-form">
+        <form method="POST" id="template-form">
 
-        <!-- ========================= -->
-        <!-- Receipt-level fields -->
-        <!-- ========================= -->
+            <!-- Receipt Details -->
+            <div class="flex-row" style="display:flex; gap:10px; margin-bottom:15px;">
+                <div class="form-group" style="flex:1;">
+                    <label for="receipt_date">Receipt Date</label>
+                    <input type="date" id="receipt_date" name="receipt_date" class="form-control"
+                           value="{{ current_date }}" required>
+                </div>
+                <div class="form-group" style="flex:1;">
+                    <label for="merchant">Merchant</label>
+                    <input type="text" id="merchant" name="merchant" class="form-control"
+                           value="{{ template.merchant }}" required>
+                </div>
+            </div>
 
-        <h3>Receipt Details</h3>
+            <div class="form-row" style="display:flex; gap:10px; margin-bottom:15px;">
+                <div class="form-group" style="flex:1;">
+                    <label for="payment_source">Payment Source</label>
+                    <select name="payment_source_id" id="payment_source" class="form-control select-box" required>
+                        <option value="">--Select Payment Source--</option>
+                        {% for ps in payment_sources %}
+                            <option value="{{ ps[0] }}" {% if ps[0] == template.fk_payment_sources_id %}selected{% endif %}>
+                                {{ ps[1] }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group" style="flex:1;">
+                    <label for="debit_or_credit">Transaction Type</label>
+                    <select name="debit_or_credit" id="debit_or_credit" class="form-control select-box" required>
+                        <option value="debit" {% if template.debit_or_credit == 'debit' %}selected{% endif %}>Debit (Money Out)</option>
+                        <option value="credit" {% if template.debit_or_credit == 'credit' %}selected{% endif %}>Credit (Money In)</option>
+                    </select>
+                </div>
+            </div>
 
-        <label for="merchant">Merchant</label>
-        <input type="text" id="merchant" name="merchant" value="{{ template.merchant }}" required>
+            <div class="form-group" style="margin-bottom:15px;">
+                <label for="receipt_description">Description</label>
+                <input type="text" id="receipt_description" name="receipt_description"
+                       class="form-control" value="{{ template.description }}">
+            </div>
 
-        <!-- Only relevant for creating a receipt -->
-        <h3>Receipt Date</h3>
-        <input type="date" name="receipt_date" value="{{ current_date }}" required>
+            <hr>
 
-        <h3>Payment Source</h3>
-        <select name="payment_source_id" required>
-            <option value="">--Select Payment Source--</option>
-            {% for ps in payment_sources %}
-                <option value="{{ ps[0] }}"
-                        {% if ps[0] == template.fk_payment_sources_id %}selected{% endif %}>
-                    {{ ps[1] }}
-                </option>
-            {% endfor %}
-        </select>
+            <!-- Transactions -->
+            <h3>Transactions</h3>
+            <div id="transactions-container"></div>
+            <div class="btn-group" style="margin-bottom:15px;">
+                <button type="button" id="add-transaction" class="btn grey-btn">+ Add Transaction</button>
+            </div>
 
-        <h3>Transaction Type</h3>
-        <select name="debit_or_credit" required>
-            <option value="debit" {% if template.debit_or_credit == 'debit' %}selected{% endif %}>
-                Debit (Money Out)
-            </option>
-            <option value="credit" {% if template.debit_or_credit == 'credit' %}selected{% endif %}>
-                Credit (Money In)
-            </option>
-        </select>
+            <hr>
 
-        <label>Description</label>
-        <input type="text" name="receipt_description" value="{{ template.description }}">
+            <!-- Actions -->
+            <div class="btn-group">
+                <button type="submit" name="action" value="save_template" class="btn submit-btn">
+                    Save Template
+                </button>
+                <button type="submit" name="action" value="create_receipt" class="btn submit-btn">
+                    Create Receipt from Template
+                </button>
+            </div>
 
-        <hr>
+        </form>
 
-        <!-- ========================= -->
-        <!-- Envelope transactions -->
-        <!-- ========================= -->
+        <!-- Delete Template -->
+        <form method="POST"
+              action="{{ url_for('receipt_templates_delete_route',
+                                 budget_id=budget_id,
+                                 template_id=template.pk_receipt_templates_id) }}"
+              onsubmit="return confirm('Delete this receipt template? This cannot be undone.');"
+              style="margin-top:10px;">
+            <button type="submit" class="btn delete-btn">Delete Template</button>
+        </form>
 
-        <h3>Transactions</h3>
-        <div id="transactions-container"></div>
-        <button type="button" id="add-transaction">+ Add Transaction</button>
-
-        <hr>
-
-        <!-- ========================= -->
-        <!-- Template actions -->
-        <!-- ========================= -->
-
-        <button type="submit" name="action" value="save_template">
-            Save Template
-        </button>
-
-        <button type="submit" name="action" value="create_receipt">
-            Create Receipt from Template
-        </button>
-
-    </form>
-
-    <!-- ========================= -->
-    <!-- DELETE TEMPLATE (SEPARATE) -->
-    <!-- ========================= -->
-    <form method="POST"
-          action="{{ url_for('receipt_templates_delete_route',
-                             budget_id=budget_id,
-                             template_id=template.pk_receipt_templates_id) }}"
-          onsubmit="return confirm('Delete this receipt template? This cannot be undone.');"
-          style="margin-top:15px;">
-
-        <button type="submit"
-                style="background:red; color:white; padding:6px 10px; border:none; cursor:pointer;">
-            Delete Template
-        </button>
-    </form>
-
+    </div>
 </div>
 
 <script>
 const envelopeMap = {{ envelope_map | tojson }};
 let transactionCount = 0;
 
-// Create transaction rows from template
 function createTransactionRow(txn = null) {
-    transactionCount += 1;
-
+    transactionCount++;
     const container = document.getElementById("transactions-container");
     const row = document.createElement("div");
     row.classList.add("transaction-row");
-    row.style = "border:1px solid #ccc; padding:10px; margin-bottom:10px;";
+    row.style = "border:1px solid #ccc; padding:10px; margin-bottom:10px; border-radius:8px;";
     row.id = `transaction-${transactionCount}`;
 
     const envelopeOptions = Object.keys(envelopeMap).map(id => {
@@ -111,31 +114,28 @@ function createTransactionRow(txn = null) {
     }).join("");
 
     row.innerHTML = `
-        <label>Envelope:</label>
-        <select name="transactions[${transactionCount}][envelope_id]"
-                onchange="renderFields(${transactionCount}, this.value)"
-                required>
-            <option value="">--Select Envelope--</option>
-            ${envelopeOptions}
-        </select>
-
-        <div id="fields-${transactionCount}" style="margin-top:10px;"></div>
-
-        <button type="button"
-                class="remove-transaction"
-                style="margin-top:5px; background:red; color:white; border:none; padding:4px 6px; cursor:pointer;">
-            – Remove
-        </button>
+        <div class="transaction-inner" style="text-align:center;">
+            <div class="form-group" style="max-width:300px; margin:0 auto 10px auto;">
+                <label>Envelope</label>
+                <select name="transactions[${transactionCount}][envelope_id]" 
+                        class="form-control select-box"
+                        onchange="renderFields(${transactionCount}, this.value)" required>
+                    <option value="">--Select Envelope--</option>
+                    ${envelopeOptions}
+                </select>
+            </div>
+            <div id="fields-${transactionCount}" class="fields"></div>
+            <div class="btn-group" style="margin-top:5px;">
+                <button type="button" class="btn delete-btn remove-transaction">– Remove</button>
+            </div>
+        </div>
     `;
 
     container.appendChild(row);
 
-    if (txn) {
-        renderFields(transactionCount, txn.envelope_id, txn.details);
-    }
+    if (txn) renderFields(transactionCount, txn.envelope_id, txn.details);
 }
 
-// Render fields for a row
 function renderFields(rowNumber, envelopeId, values = null) {
     const fieldDiv = document.getElementById(`fields-${rowNumber}`);
     fieldDiv.innerHTML = "";
@@ -149,39 +149,35 @@ function renderFields(rowNumber, envelopeId, values = null) {
     if (descField) {
         const val = values ? values.description : "";
         fieldDiv.innerHTML += `
-            <div style="margin-bottom:8px;">
+            <div class="form-group" style="margin-bottom:6px;">
                 <label>Description</label>
-                <input type="text"
-                       name="transactions[${rowNumber}][description]"
-                       value="${val}">
+                <input type="text" name="transactions[${rowNumber}][description]"
+                       value="${val}" class="form-control" style="font-size:0.9em; padding:4px;">
             </div>
         `;
     }
 
-    // Other fields
+    // Other fields in 2-column grid
     fields.forEach(field => {
         if (field.name.toLowerCase() === "description") return;
 
         const inputName = `transactions[${rowNumber}][${field.name}]`;
-        const inputType =
-            field.type.startsWith("numeric") ? "number" :
-            field.type === "date" ? "date" : "text";
-
+        const inputType = field.type.startsWith("numeric") ? "number" :
+                          field.type === "date" ? "date" : "text";
         const val = values ? values[field.name] : "";
 
         fieldDiv.innerHTML += `
-            <div style="margin-bottom:8px;">
-                <label>
-                    ${field.name.charAt(0).toUpperCase() + field.name.slice(1).replace(/_/g, " ")}
-                    ${field.required ? "*" : ""}
-                </label>
-                <input type="${inputType}"
-                       name="${inputName}"
-                       value="${val}"
+            <div class="form-group" style="margin-bottom:6px;">
+                <label>${field.name.charAt(0).toUpperCase() + field.name.slice(1).replace(/_/g," ")}
+                      ${field.required ? "*" : ""}</label>
+                <input type="${inputType}" name="${inputName}" value="${val}" 
+                       class="form-control" style="font-size:0.9em; padding:4px;" 
                        ${field.required ? "required" : ""}>
             </div>
         `;
     });
+
+    fieldDiv.classList.add("fields");
 }
 
 // Preload template transactions
@@ -190,8 +186,7 @@ createTransactionRow({{ txn | tojson }});
 {% endfor %}
 
 // Add transaction row
-document.getElementById("add-transaction")
-    .addEventListener("click", () => createTransactionRow());
+document.getElementById("add-transaction").addEventListener("click", () => createTransactionRow());
 
 // Remove transaction row
 document.addEventListener("click", function(e) {
@@ -201,9 +196,4 @@ document.addEventListener("click", function(e) {
     }
 });
 </script>
-
-<div class="btn-group2">
-    {{ nav.receipts_home(budget_id) }}
-</div>
-
 {% endblock %}
