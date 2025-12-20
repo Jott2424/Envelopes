@@ -1,12 +1,41 @@
+{% import "nav_macros.html" as nav %}
+{% extends "base.html" %}
+
+{% block title %}Getting Started{% endblock %}
+
 {% block content %}
-<h1 class="getting-started-title">Getting Started!</h1>
-    <p> you dont have any budgets yet, lets create one!</p>
-<div class="container">
-    <form method="POST">
-        <label for="Name">Budget Name</label>
-        <textarea id="Name" name="budget_name" rows="1"></textarea>
-        
-        <button type="submit">Create Budget</button>
-    </form>
+<div class="home-container">
+
+    <!-- Top right navigation -->
+    <div class="header-links">
+        {{ nav.home() }}
+        {{ nav.logout() }}
+    </div>
+
+    <!-- Main card -->
+    <div class="card">
+        <h1 class="getting-started-title">Getting Started!</h1>
+        <p>You don’t have any budgets yet, let’s create one!</p>
+
+        <form method="POST">
+            <div class="form-group">
+                <label for="budget_name">Budget Name</label>
+                <input
+                    type="text"
+                    id="budget_name"
+                    name="budget_name"
+                    class="form-control"
+                    placeholder="Enter a budget name"
+                    required
+                    autofocus
+                >
+            </div>
+
+            <div class="btn-group">
+                <button type="submit" class="btn submit-btn">Create Budget</button>
+            </div>
+        </form>
+    </div>
+
 </div>
 {% endblock %}

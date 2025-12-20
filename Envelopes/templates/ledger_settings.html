@@ -1,13 +1,52 @@
-{% block content %}
-<h1>Ledger Default Envelopes</h1>
+{% import "nav_macros.html" as nav %}
+{% extends "base.html" %}
 
-<form method="POST">
-    {% for eid, name in envelopes %}
-        <label>
-            <input type="checkbox" name="envelopes" value="{{ eid }}" {% if eid in selected %}checked{% endif %}>
-            {{ name }}
-        </label><br>
-    {% endfor %}
-    <button type="submit">Save</button>
-</form>
+{% block title %}Ledger Default Envelopes{% endblock %}
+
+{% block content %}
+<div class="home-container">
+
+    <!-- Top right navigation -->
+    <div class="header-links">
+        {{ nav.ledger_overview(budget_id) }}
+        {{ nav.home() }}
+        {{ nav.logout() }}
+    </div>
+
+    <!-- Main card -->
+    <div class="card">
+        <h1>Ledger Default Envelopes</h1>
+
+        {% if envelopes %}
+            <form method="POST">
+                <ul class="single-select-list">
+                    {% for eid, name in envelopes %}
+                        <li class="single-select-item">
+                            <label class="radio-row">
+                                <input
+                                    type="checkbox"
+                                    name="envelopes"
+                                    value="{{ eid }}"
+                                    {% if eid in selected %}checked{% endif %}
+                                >
+                                <span>{{ name }}</span>
+                            </label>
+                        </li>
+                    {% endfor %}
+                </ul>
+
+                <div class="btn-group">
+                    <button type="submit" class="btn submit-btn">
+                        Save Defaults
+                    </button>
+                </div>
+            </form>
+        {% else %}
+            <p class="empty-state">
+                You don't have any envelopes yet.
+            </p>
+        {% endif %}
+    </div>
+
+</div>
 {% endblock %}

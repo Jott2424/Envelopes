@@ -21,7 +21,7 @@ GET_ENVELOPES_AND_TRANSACTION_FIELDS_BY_BUDGET_ID = "SELECT e.pk_envelopes_id, e
 GET_ENVELOPE_NAME_AND_TRANSACTION_FIELDS_BY_BUDGET_AND_ENVELOPE_ID = "SELECT e.name, pk_envelope_transaction_fields_id, e.fk_budgets_id, fk_envelopes_id, form_order, field_name, field_type, is_required FROM envelope_transaction_fields etf JOIN envelopes e ON e.pk_envelopes_id = fk_envelopes_id WHERE e.fk_budgets_id = %s AND fk_envelopes_id = %s"
 GET_ENVELOPE_NAME_AND_TRANSACTION_FIELDS_EXCLUDING_AMOUNT_BY_BUDGET_AND_ENVELOPE_ID = "SELECT e.name, pk_envelope_transaction_fields_id, e.fk_budgets_id, fk_envelopes_id, form_order, field_name, field_type, is_required FROM envelope_transaction_fields etf JOIN envelopes e ON e.pk_envelopes_id = fk_envelopes_id WHERE e.fk_budgets_id = %s AND fk_envelopes_id = %s AND lower(field_name) NOT IN ('amount','description') "
 GET_ENVELOPES_NAME_AND_TRANSACTION_FIELDS_BY_BUDGET = "SELECT e.name, fk_envelopes_id, form_order, field_name, field_type, is_required FROM envelope_transaction_fields etf JOIN envelopes e ON e.pk_envelopes_id = fk_envelopes_id WHERE e.fk_budgets_id = %s"
-GET_RECEIPT_TEMPLATES_AND_PAYMENT_SOURCES_BY_BUDGETS_ID = "SELECT rt.pk_receipt_templates_id, rt.description, rt.debit_or_credit, ps.name as payment_source_name FROM receipt_templates rt LEFT JOIN payment_sources ps ON ps.pk_payment_sources_id = rt.fk_payment_sources_id WHERE rt.fk_budgets_id = %s"
+GET_RECEIPT_TEMPLATES_AND_PAYMENT_SOURCES_BY_BUDGETS_ID = "SELECT rt.pk_receipt_templates_id, rt.description, rt.debit_or_credit, ps.name as payment_source_name FROM receipt_templates rt LEFT JOIN payment_sources ps ON ps.pk_payment_sources_id = rt.fk_payment_sources_id WHERE rt.fk_budgets_id = %s ORDER BY rt.description ASC"
 GET_RECEIPTS_AND_PAYMENT_SOURCES_BY_BUDGETS_ID = "SELECT r.pk_receipts_id, r.description, r.debit_or_credit, r.transaction_date, r.amount, ps.name as payment_source_name FROM receipts r LEFT JOIN payment_sources ps ON ps.pk_payment_sources_id = r.fk_payment_sources_id WHERE r.fk_budgets_id = %s"
 GET_RECEIPT_TEMPLATES_BY_RECEIPT_TEMPLATES_ID = "SELECT pk_receipt_templates_id, fk_payment_sources_id, debit_or_credit, merchant, description FROM receipt_templates WHERE pk_receipt_templates_id = %s"
 GET_TRANSACTION_TEMPLATES_BY_RECEIPT_TEMPLATES_ID = "SELECT fk_envelopes_id AS envelope_id, details FROM transaction_templates WHERE fk_receipt_templates_id = %s ORDER BY pk_transaction_templates_id"
@@ -73,7 +73,6 @@ DROP_FROM_TRANSACTIONS_BY_FK = "DELETE FROM transactions WHERE fk_receipts_id = 
 GET_LEDGER_WEEKLY_SUMS = """
 WITH all_receipts AS (
     SELECT
-        r.pk_receipts_id,
         r.transaction_date,
         r.debit_or_credit,
         t.fk_envelopes_id,
@@ -84,14 +83,35 @@ WITH all_receipts AS (
       AND r.transaction_date BETWEEN %s AND %s
 )
 SELECT
-    to_char(date_trunc('week', r.transaction_date + interval '1 day') - interval '1 day', 'YYYY-MM-DD') || ' - ' ||
-    to_char(date_trunc('week', r.transaction_date + interval '1 day') - interval '1 day' + interval '6 days', 'YYYY-MM-DD') AS week_label,
+    to_char(
+        date_trunc('week', transaction_date + interval '1 day') - interval '1 day',
+        'YYYY-MM-DD'
+    ) || ' - ' ||
+    to_char(
+        date_trunc('week', transaction_date + interval '1 day') - interval '1 day' + interval '6 days',
+        'YYYY-MM-DD'
+    ) AS week_label,
+    fk_envelopes_id,
+    SUM(CASE WHEN debit_or_credit = 'debit' THEN amount ELSE 0 END) AS debit,
+    SUM(CASE WHEN debit_or_credit = 'credit' THEN amount ELSE 0 END) AS credit
+FROM all_receipts
+GROUP BY 1, 2
+ORDER BY 1 ASC;
+"""
+
+GET_LEDGER_BALANCES_BEFORE_DATE = """
+SELECT
     t.fk_envelopes_id,
-    SUM(CASE WHEN r.debit_or_credit='debit' THEN (t.details->>'amount')::numeric ELSE 0 END) AS debit,
-    SUM(CASE WHEN r.debit_or_credit='credit' THEN (t.details->>'amount')::numeric ELSE 0 END) AS credit
+    SUM(
+        CASE
+            WHEN r.debit_or_credit = 'credit' THEN (t.details->>'amount')::numeric
+            ELSE -(t.details->>'amount')::numeric
+        END
+    ) AS balance
 FROM receipts r
 JOIN transactions t ON t.fk_receipts_id = r.pk_receipts_id
-GROUP BY 1,2
-ORDER BY 1 ASC;
-
+WHERE r.fk_budgets_id = %s
+  AND r.transaction_date < %s
+GROUP BY t.fk_envelopes_id;
 """
+

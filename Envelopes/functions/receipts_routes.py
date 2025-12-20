@@ -174,7 +174,7 @@ def receipts_view(budget_id):
         query += " AND ps.name ILIKE %s"  # case-insensitive partial match
         params.append(f"%{payment_source_name}%")
 
-    query += " ORDER BY r.transaction_date ASC"
+    query += " ORDER BY r.transaction_date DESC"
 
     cur.execute(query, params)
     columns = [desc[0] for desc in cur.description]
