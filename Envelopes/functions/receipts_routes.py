@@ -214,8 +214,13 @@ def receipt_templates_edit(budget_id, template_id):
     conn = db_utils.get_db_connection()
     cur = conn.cursor()
 
+    # ----------------------------
     # Load template
-    cur.execute(queries.GET_RECEIPT_TEMPLATES_BY_RECEIPT_TEMPLATES_ID, (template_id,))
+    # ----------------------------
+    cur.execute(
+        queries.GET_RECEIPT_TEMPLATES_BY_RECEIPT_TEMPLATES_ID,
+        (template_id,)
+    )
     row = cur.fetchone()
     if not row:
         flash("Template not found.", "error")
@@ -231,110 +236,165 @@ def receipt_templates_edit(budget_id, template_id):
         "description": row[4]
     }
 
+    # ----------------------------
     # Load payment sources
-    cur.execute(queries.GET_PAYMENT_SOURCES_BY_BUDGET_ID, (budget_id,))
+    # ----------------------------
+    cur.execute(
+        queries.GET_PAYMENT_SOURCES_BY_BUDGET_ID,
+        (budget_id,)
+    )
     payment_sources = cur.fetchall()
 
-    # Load transactions
-    cur.execute(queries.GET_TRANSACTION_TEMPLATES_BY_RECEIPT_TEMPLATES_ID, (template_id,))
+    # ----------------------------
+    # Load template transactions
+    # ----------------------------
+    cur.execute(
+        queries.GET_TRANSACTION_TEMPLATES_BY_RECEIPT_TEMPLATES_ID,
+        (template_id,)
+    )
     transaction_template_rows = cur.fetchall()
-    template_transactions = [{"envelope_id": r[0], "details": r[1]} for r in transaction_template_rows]
+    template_transactions = [
+        {"envelope_id": r[0], "details": r[1]}
+        for r in transaction_template_rows
+    ]
 
+    # ----------------------------
     # Load envelope fields
-    cur.execute(queries.GET_ENVELOPES_NAME_AND_TRANSACTION_FIELDS_BY_BUDGET, (budget_id,))
+    # ----------------------------
+    cur.execute(
+        queries.GET_ENVELOPES_NAME_AND_TRANSACTION_FIELDS_BY_BUDGET,
+        (budget_id,)
+    )
     rows = cur.fetchall()
+
     envelope_map = {}
     for envelope_name, envelope_id, form_order, field_name, field_type, is_required in rows:
-        if envelope_id not in envelope_map:
-            envelope_map[envelope_id] = {"name": envelope_name, "fields": []}
+        envelope_map.setdefault(
+            envelope_id,
+            {"name": envelope_name, "fields": []}
+        )
         envelope_map[envelope_id]["fields"].append({
             "name": field_name,
             "type": field_type,
             "required": bool(is_required),
             "form_order": form_order
         })
+
     for env in envelope_map.values():
         env["fields"].sort(key=lambda f: f["form_order"])
 
-    # Default current date for new receipts
     current_date = date.today().isoformat()
 
+    # ============================
+    # HANDLE POST
+    # ============================
     if request.method == "POST":
         action = request.form.get("action")
 
-        if action in ("save_template", "create_receipt"):
-            merchant = request.form.get("merchant")
-            debit_or_credit = request.form.get("debit_or_credit")
-            payment_source_id = request.form.get("payment_source_id")
-            description = request.form.get("receipt_description")
+        merchant = request.form.get("merchant")
+        debit_or_credit = request.form.get("debit_or_credit")
+        payment_source_id = request.form.get("payment_source_id")
+        description = request.form.get("receipt_description")
 
-            # Update template
-            cur.execute(queries.UPDATE_RECEIPT_TEMPLATES_BY_PK,
-                        (merchant, debit_or_credit, payment_source_id, description, template_id))
+        # ----------------------------
+        # Parse transactions ONCE
+        # ----------------------------
+        parsed_transactions = {}
 
-            # Delete old transactions
-            cur.execute(queries.DROP_FROM_TRANSACTION_TEMPLATES_BY_FK, (template_id,))
+        for key, value in request.form.items():
+            if key.startswith("transactions["):
+                parts = key.split("[")
+                row_id = parts[1][:-1]
+                field_name = parts[2][:-1]
 
-            # Insert new transactions
-            transactions = {}
-            for key, value in request.form.items():
-                if key.startswith("transactions["):
-                    parts = key.split("[")
-                    row_id = parts[1][:-1]
-                    field_name = parts[2][:-1]
-                    transactions.setdefault(row_id, {})
-                    transactions[row_id][field_name] = value.strip()
+                parsed_transactions.setdefault(row_id, {})
+                parsed_transactions[row_id][field_name] = value.strip()
 
-            for txn in transactions.values():
-                envelope_id = txn.pop("envelope_id")
-                cur.execute(queries.INSERT_INTO_TRANSACTION_TEMPLATES,
-                            (template_id, envelope_id, json.dumps(txn)))
+        # ----------------------------
+        # SAVE TEMPLATE
+        # ----------------------------
+        if action == "save_template":
+            cur.execute(
+                queries.UPDATE_RECEIPT_TEMPLATES_BY_PK,
+                (merchant, debit_or_credit, payment_source_id, description, template_id)
+            )
+
+            cur.execute(
+                queries.DROP_FROM_TRANSACTION_TEMPLATES_BY_FK,
+                (template_id,)
+            )
+
+            for txn in parsed_transactions.values():
+                envelope_id = txn["envelope_id"]
+                details = {
+                    k: v for k, v in txn.items()
+                    if k != "envelope_id"
+                }
+
+                cur.execute(
+                    queries.INSERT_INTO_TRANSACTION_TEMPLATES,
+                    (template_id, envelope_id, json.dumps(details))
+                )
 
             conn.commit()
+            flash("Template updated successfully.", "success")
 
-            if action == "create_receipt":
-                # Get the selected receipt date from form
-                receipt_date_str = request.form.get("receipt_date")
-                receipt_date = datetime.strptime(receipt_date_str, "%Y-%m-%d").date()
+        # ----------------------------
+        # CREATE RECEIPT FROM TEMPLATE
+        # ----------------------------
+        elif action == "create_receipt":
+            receipt_date = datetime.strptime(
+                request.form.get("receipt_date"),
+                "%Y-%m-%d"
+            ).date()
 
-                # Calculate total amount
-                total_amount = Decimal("0.00")
-                for txn in transactions.values():
-                    amt = txn.get("amount")
-                    if amt:
-                        total_amount += Decimal(amt)
+            total_amount = Decimal("0.00")
+            for txn in parsed_transactions.values():
+                if "amount" in txn and txn["amount"]:
+                    total_amount += Decimal(txn["amount"])
 
-                # Insert receipt
-                cur.execute(
-                    queries.INSERT_INTO_RECEIPTS_RETURN_PK,
-                    (budget_id, current_user.id, payment_source_id, debit_or_credit, receipt_date,
-                     merchant, total_amount, description)
+            cur.execute(
+                queries.INSERT_INTO_RECEIPTS_RETURN_PK,
+                (
+                    budget_id,
+                    current_user.id,
+                    payment_source_id,
+                    debit_or_credit,
+                    receipt_date,
+                    merchant,
+                    total_amount,
+                    description
                 )
-                receipt_id = cur.fetchone()[0]
+            )
+            receipt_id = cur.fetchone()[0]
 
-                # Insert transactions for the receipt
-                for envelope_id, txn in transactions.items():
-                    envelope_id = int(envelope_id)  # keys come in as strings
-                    txn_description = txn.pop("description", None)
-                    if txn_description:
-                        txn["description"] = txn_description
+            for txn in parsed_transactions.values():
+                envelope_id = int(txn["envelope_id"])
+                details = {
+                    k: v for k, v in txn.items()
+                    if k != "envelope_id"
+                }
 
-                    cur.execute(
-                        queries.INSERT_INTO_TRANSACTIONS,
-                        (receipt_id, envelope_id, json.dumps(txn))
-                    )
+                cur.execute(
+                    queries.INSERT_INTO_TRANSACTIONS,
+                    (receipt_id, envelope_id, json.dumps(details))
+                )
 
-                conn.commit()
-                flash("Receipt created successfully from template.", "success")
-            else:
-                flash("Template updated successfully.", "success")
+            conn.commit()
+            flash("Receipt created successfully from template.", "success")
 
-            cur.close()
-            conn.close()
-            return redirect(url_for("receipt_templates_view_route", budget_id=budget_id))
+        cur.close()
+        conn.close()
+        return redirect(
+            url_for("receipt_templates_view_route", budget_id=budget_id)
+        )
 
+    # ============================
+    # GET
+    # ============================
     cur.close()
     conn.close()
+
     return render_template(
         "receipt_templates_edit.html",
         budget_id=budget_id,
