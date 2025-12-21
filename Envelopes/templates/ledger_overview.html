@@ -45,35 +45,55 @@
             <h3>
                 {{ week }}
                 {{ nav.ledger_receipts_view(budget_id, week_start, week_end) }}
-    </h3>
+            </h3>
 
+            {% set sorted_envelopes = envelopes.items()|sort(attribute=1) %}
+            {% set ns = namespace(total_credit=0, total_debit=0, total_running=0) %}
 
             <table class="styled-table">
                 <thead>
                     <tr>
                         <th>Type</th>
-                        {% for eid, name in envelopes.items() %}
+                        <th>Total</th>
+                        {% for eid, name in sorted_envelopes %}
                             <th>{{ name }}</th>
                         {% endfor %}
                     </tr>
                 </thead>
                 <tbody>
+                    {# Deposits Row #}
                     <tr>
                         <td>Deposits</td>
-                        {% for eid in envelopes.keys() %}
-                            <td>{{ env_data.get(eid, {}).credit or 0 }}</td>
+                        {% for eid, name in sorted_envelopes %}
+                            {% set ns.total_credit = ns.total_credit + (env_data[eid]['credit'] if eid in env_data else 0) %}
+                        {% endfor %}
+                        <td>{{ ns.total_credit }}</td>
+                        {% for eid, name in sorted_envelopes %}
+                            <td>{{ env_data[eid]['credit'] if eid in env_data else 0 }}</td>
                         {% endfor %}
                     </tr>
+
+                    {# Withdrawals Row #}
                     <tr>
                         <td>Withdrawals</td>
-                        {% for eid in envelopes.keys() %}
-                            <td>{{ env_data.get(eid, {}).debit or 0 }}</td>
+                        {% for eid, name in sorted_envelopes %}
+                            {% set ns.total_debit = ns.total_debit + (env_data[eid]['debit'] if eid in env_data else 0) %}
+                        {% endfor %}
+                        <td>{{ ns.total_debit }}</td>
+                        {% for eid, name in sorted_envelopes %}
+                            <td>{{ env_data[eid]['debit'] if eid in env_data else 0 }}</td>
                         {% endfor %}
                     </tr>
+
+                    {# Running Total Row #}
                     <tr>
                         <td>Running Total</td>
-                        {% for eid in envelopes.keys() %}
-                            <td>{{ env_data.get(eid, {}).running_total or 0 }}</td>
+                        {% for eid, name in sorted_envelopes %}
+                            {% set ns.total_running = ns.total_running + (env_data[eid]['running_total'] if eid in env_data else 0) %}
+                        {% endfor %}
+                        <td>{{ ns.total_running }}</td>
+                        {% for eid, name in sorted_envelopes %}
+                            <td>{{ env_data[eid]['running_total'] if eid in env_data else 0 }}</td>
                         {% endfor %}
                     </tr>
                 </tbody>

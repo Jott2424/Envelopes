@@ -21,22 +21,33 @@
 
             <!-- Row: Date + Merchant -->
             <div class="flex-row" style="display:flex; gap:10px; margin-bottom:15px;">
-            <div class="form-group" style="flex:1; min-width:0;gap:10px">
-                <label for="transaction_date">Date</label>
-                <input type="date" id="transaction_date" name="transaction_date" class="form-control" required>
+                <div class="form-group" style="flex:1; min-width:0;">
+                    <label for="transaction_date">Date</label>
+                    <input type="date"
+                           id="transaction_date"
+                           name="transaction_date"
+                           class="form-control"
+                           required>
+                </div>
+                <div class="form-group" style="flex:1; min-width:0;">
+                    <label for="merchant">Merchant</label>
+                    <input type="text"
+                           id="merchant"
+                           name="merchant"
+                           class="form-control"
+                           placeholder="e.g. Aldi"
+                           required>
+                </div>
             </div>
-            <div class="form-group" style="flex:1; min-width:0;">
-                <label for="merchant">Merchant</label>
-                <input type="text" id="merchant" name="merchant" class="form-control" placeholder="e.g. Aldi" required>
-            </div>
-        </div>
-
 
             <!-- Row: Payment Source + Transaction Type -->
             <div class="form-row" style="display:flex; gap:10px; margin-bottom:15px;">
                 <div class="form-group" style="flex:1;">
                     <label for="payment_source">Payment Source</label>
-                    <select name="payment_source_id" id="payment_source" class="form-control select-box" required>
+                    <select name="payment_source_id"
+                            id="payment_source"
+                            class="form-control select-box"
+                            required>
                         <option value="">--Select Payment Source--</option>
                         {% for ps in payment_sources %}
                             <option value="{{ ps[0] }}">{{ ps[1] }}</option>
@@ -45,7 +56,10 @@
                 </div>
                 <div class="form-group" style="flex:1;">
                     <label for="debit_or_credit">Transaction Type</label>
-                    <select name="debit_or_credit" id="debit_or_credit" class="form-control select-box" required>
+                    <select name="debit_or_credit"
+                            id="debit_or_credit"
+                            class="form-control select-box"
+                            required>
                         <option value="">--Select Type--</option>
                         <option value="debit">Debit (Money Out)</option>
                         <option value="credit">Credit (Money In)</option>
@@ -56,7 +70,11 @@
             <!-- Description -->
             <div class="form-group" style="margin-bottom:15px;">
                 <label for="receipt_description">Description</label>
-                <input type="text" id="receipt_description" name="receipt_description" class="form-control" placeholder="Optional description">
+                <input type="text"
+                       id="receipt_description"
+                       name="receipt_description"
+                       class="form-control"
+                       placeholder="Optional description">
             </div>
 
             <hr>
@@ -64,8 +82,11 @@
             <!-- Envelope Transactions -->
             <h3>Transactions</h3>
             <div id="transactions-container"></div>
+
             <div class="btn-group" style="margin-bottom:15px;">
-                <button type="button" id="add-transaction" class="btn grey-btn">+ Add Transaction</button>
+                <button type="button" id="add-transaction" class="btn grey-btn">
+                    + Add Transaction
+                </button>
             </div>
 
             <hr>
@@ -73,13 +94,15 @@
             <!-- Save as Template -->
             <div class="form-group">
                 <label>
-                    <input type="checkbox" name="save_as_template" id="save_as_template">
+                    <input type="checkbox" name="save_as_template">
                     Save this receipt as a template
                 </label>
             </div>
 
             <div class="btn-group">
-                <button type="submit" class="btn submit-btn">Create Receipt</button>
+                <button type="submit" class="btn submit-btn">
+                    Create Receipt
+                </button>
             </div>
 
         </form>
@@ -94,29 +117,37 @@ let transactionCount = 0;
 function createTransactionRow() {
     transactionCount++;
     const container = document.getElementById("transactions-container");
+
     const row = document.createElement("div");
     row.classList.add("transaction-row");
     row.id = `transaction-${transactionCount}`;
     row.style = "border:1px solid #ccc; padding:10px; margin-bottom:10px; border-radius:8px;";
 
-    const envelopeOptions = Object.keys(envelopeMap).map(id => {
-        return `<option value="${id}">${envelopeMap[id].name}</option>`;
-    }).join("");
+    const envelopeOptions = Object.keys(envelopeMap).map(id =>
+        `<option value="${id}">${envelopeMap[id].name}</option>`
+    ).join("");
 
     row.innerHTML = `
         <div class="transaction-inner" style="text-align:center;">
             <div class="form-group" style="max-width:300px; margin:0 auto 10px auto;">
                 <label>Envelope</label>
-                <select name="transactions[${transactionCount}][envelope_id]" class="form-control select-box"
-                        onchange="renderFields(${transactionCount}, this.value)" required>
+                <select name="transactions[${transactionCount}][envelope_id]"
+                        class="form-control select-box"
+                        onchange="renderFields(${transactionCount}, this.value)"
+                        required>
                     <option value="">--Select Envelope--</option>
                     ${envelopeOptions}
                 </select>
             </div>
+
             <div id="fields-${transactionCount}" class="fields"></div>
-        </div>
-        <div class="btn-group" style="margin-top:5px;">
-            <button type="button" class="btn delete-btn remove-transaction">– Remove</button>
+
+            <div class="btn-group" style="margin-top:5px;">
+                <button type="button"
+                        class="btn delete-btn remove-transaction">
+                    – Remove
+                </button>
+            </div>
         </div>
     `;
 
@@ -129,30 +160,42 @@ function renderFields(rowNumber, envelopeId) {
 
     if (!envelopeId || !envelopeMap[envelopeId]) return;
 
-    const fields = envelopeMap[envelopeId].fields;
-
-    fields.forEach(field => {
+    envelopeMap[envelopeId].fields.forEach(field => {
         const inputName = `transactions[${rowNumber}][${field.name}]`;
+
         let inputType = "text";
-        if (field.type.startsWith("numeric")) inputType = "number";
-        if (field.type === "date") inputType = "date";
+        let stepAttr = "";
 
-        const requiredAttr = field.required ? "required" : "";
-
-        const labelText = field.name.charAt(0).toUpperCase() + field.name.slice(1).replace(/_/g, " ");
+        if (field.type.startsWith("numeric")) {
+            inputType = "number";
+            stepAttr = 'step="0.01"';
+        } else if (field.type === "date") {
+            inputType = "date";
+        }
 
         fieldDiv.innerHTML += `
             <div class="form-group" style="margin-bottom:6px;">
-                <label style="font-size:0.9em;">${labelText}${field.required ? " *" : ""}</label>
-                <input type="${inputType}" name="${inputName}" class="form-control" style="font-size:0.9em; padding:4px;" ${requiredAttr}>
+                <label style="font-size:0.9em;">
+                    ${field.name.charAt(0).toUpperCase() +
+                      field.name.slice(1).replace(/_/g, " ")}
+                    ${field.required ? " *" : ""}
+                </label>
+                <input type="${inputType}"
+                       name="${inputName}"
+                       ${stepAttr}
+                       class="form-control"
+                       style="font-size:0.9em; padding:4px;"
+                       ${field.required ? "required" : ""}>
             </div>
         `;
     });
 }
 
+// Start with one transaction row
 createTransactionRow();
 
-document.getElementById("add-transaction").addEventListener("click", createTransactionRow);
+document.getElementById("add-transaction")
+    .addEventListener("click", createTransactionRow);
 
 document.addEventListener("click", function(e) {
     if (e.target.classList.contains("remove-transaction")) {

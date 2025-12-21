@@ -23,23 +23,35 @@
             <div class="flex-row" style="display:flex; gap:10px; margin-bottom:15px;">
                 <div class="form-group" style="flex:1;">
                     <label for="receipt_date">Receipt Date</label>
-                    <input type="date" id="receipt_date" name="receipt_date" class="form-control"
-                           value="{{ current_date }}" required>
+                    <input type="date"
+                           id="receipt_date"
+                           name="receipt_date"
+                           class="form-control"
+                           value="{{ current_date }}"
+                           required>
                 </div>
                 <div class="form-group" style="flex:1;">
                     <label for="merchant">Merchant</label>
-                    <input type="text" id="merchant" name="merchant" class="form-control"
-                           value="{{ template.merchant }}" required>
+                    <input type="text"
+                           id="merchant"
+                           name="merchant"
+                           class="form-control"
+                           value="{{ template.merchant }}"
+                           required>
                 </div>
             </div>
 
             <div class="form-row" style="display:flex; gap:10px; margin-bottom:15px;">
                 <div class="form-group" style="flex:1;">
                     <label for="payment_source">Payment Source</label>
-                    <select name="payment_source_id" id="payment_source" class="form-control select-box" required>
+                    <select name="payment_source_id"
+                            id="payment_source"
+                            class="form-control select-box"
+                            required>
                         <option value="">--Select Payment Source--</option>
                         {% for ps in payment_sources %}
-                            <option value="{{ ps[0] }}" {% if ps[0] == template.fk_payment_sources_id %}selected{% endif %}>
+                            <option value="{{ ps[0] }}"
+                                {% if ps[0] == template.fk_payment_sources_id %}selected{% endif %}>
                                 {{ ps[1] }}
                             </option>
                         {% endfor %}
@@ -47,17 +59,29 @@
                 </div>
                 <div class="form-group" style="flex:1;">
                     <label for="debit_or_credit">Transaction Type</label>
-                    <select name="debit_or_credit" id="debit_or_credit" class="form-control select-box" required>
-                        <option value="debit" {% if template.debit_or_credit == 'debit' %}selected{% endif %}>Debit (Money Out)</option>
-                        <option value="credit" {% if template.debit_or_credit == 'credit' %}selected{% endif %}>Credit (Money In)</option>
+                    <select name="debit_or_credit"
+                            id="debit_or_credit"
+                            class="form-control select-box"
+                            required>
+                        <option value="debit"
+                            {% if template.debit_or_credit == 'debit' %}selected{% endif %}>
+                            Debit (Money Out)
+                        </option>
+                        <option value="credit"
+                            {% if template.debit_or_credit == 'credit' %}selected{% endif %}>
+                            Credit (Money In)
+                        </option>
                     </select>
                 </div>
             </div>
 
             <div class="form-group" style="margin-bottom:15px;">
                 <label for="receipt_description">Description</label>
-                <input type="text" id="receipt_description" name="receipt_description"
-                       class="form-control" value="{{ template.description }}">
+                <input type="text"
+                       id="receipt_description"
+                       name="receipt_description"
+                       class="form-control"
+                       value="{{ template.description }}">
             </div>
 
             <hr>
@@ -65,18 +89,29 @@
             <!-- Transactions -->
             <h3>Transactions</h3>
             <div id="transactions-container"></div>
+
             <div class="btn-group" style="margin-bottom:15px;">
-                <button type="button" id="add-transaction" class="btn grey-btn">+ Add Transaction</button>
+                <button type="button"
+                        id="add-transaction"
+                        class="btn grey-btn">
+                    + Add Transaction
+                </button>
             </div>
 
             <hr>
 
             <!-- Actions -->
             <div class="btn-group">
-                <button type="submit" name="action" value="save_template" class="btn submit-btn">
+                <button type="submit"
+                        name="action"
+                        value="save_template"
+                        class="btn submit-btn">
                     Save Template
                 </button>
-                <button type="submit" name="action" value="create_receipt" class="btn submit-btn">
+                <button type="submit"
+                        name="action"
+                        value="create_receipt"
+                        class="btn submit-btn">
                     Create Receipt from Template
                 </button>
             </div>
@@ -90,7 +125,9 @@
                                  template_id=template.pk_receipt_templates_id) }}"
               onsubmit="return confirm('Delete this receipt template? This cannot be undone.');"
               style="margin-top:10px;">
-            <button type="submit" class="btn delete-btn">Delete Template</button>
+            <button type="submit" class="btn delete-btn">
+                Delete Template
+            </button>
         </form>
 
     </div>
@@ -102,11 +139,13 @@ let transactionCount = 0;
 
 function createTransactionRow(txn = null) {
     transactionCount++;
+
     const container = document.getElementById("transactions-container");
     const row = document.createElement("div");
+
     row.classList.add("transaction-row");
-    row.style = "border:1px solid #ccc; padding:10px; margin-bottom:10px; border-radius:8px;";
     row.id = `transaction-${transactionCount}`;
+    row.style = "border:1px solid #ccc; padding:10px; margin-bottom:10px; border-radius:8px;";
 
     const envelopeOptions = Object.keys(envelopeMap).map(id => {
         const selected = txn && txn.envelope_id == id ? "selected" : "";
@@ -117,23 +156,31 @@ function createTransactionRow(txn = null) {
         <div class="transaction-inner" style="text-align:center;">
             <div class="form-group" style="max-width:300px; margin:0 auto 10px auto;">
                 <label>Envelope</label>
-                <select name="transactions[${transactionCount}][envelope_id]" 
+                <select name="transactions[${transactionCount}][envelope_id]"
                         class="form-control select-box"
-                        onchange="renderFields(${transactionCount}, this.value)" required>
+                        onchange="renderFields(${transactionCount}, this.value)"
+                        required>
                     <option value="">--Select Envelope--</option>
                     ${envelopeOptions}
                 </select>
             </div>
+
             <div id="fields-${transactionCount}" class="fields"></div>
+
             <div class="btn-group" style="margin-top:5px;">
-                <button type="button" class="btn delete-btn remove-transaction">– Remove</button>
+                <button type="button"
+                        class="btn delete-btn remove-transaction">
+                    – Remove
+                </button>
             </div>
         </div>
     `;
 
     container.appendChild(row);
 
-    if (txn) renderFields(transactionCount, txn.envelope_id, txn.details);
+    if (txn) {
+        renderFields(transactionCount, txn.envelope_id, txn.details);
+    }
 }
 
 function renderFields(rowNumber, envelopeId, values = null) {
@@ -151,33 +198,49 @@ function renderFields(rowNumber, envelopeId, values = null) {
         fieldDiv.innerHTML += `
             <div class="form-group" style="margin-bottom:6px;">
                 <label>Description</label>
-                <input type="text" name="transactions[${rowNumber}][description]"
-                       value="${val}" class="form-control" style="font-size:0.9em; padding:4px;">
+                <input type="text"
+                       name="transactions[${rowNumber}][description]"
+                       value="${val}"
+                       class="form-control"
+                       style="font-size:0.9em; padding:4px;">
             </div>
         `;
     }
 
-    // Other fields in 2-column grid
+    // Other fields
     fields.forEach(field => {
         if (field.name.toLowerCase() === "description") return;
 
         const inputName = `transactions[${rowNumber}][${field.name}]`;
-        const inputType = field.type.startsWith("numeric") ? "number" :
-                          field.type === "date" ? "date" : "text";
+        const inputType = field.type.startsWith("numeric")
+            ? "number"
+            : field.type === "date"
+                ? "date"
+                : "text";
+
+        const stepAttr = field.type.startsWith("numeric")
+            ? 'step="0.01"'
+            : '';
+
         const val = values ? values[field.name] : "";
 
         fieldDiv.innerHTML += `
             <div class="form-group" style="margin-bottom:6px;">
-                <label>${field.name.charAt(0).toUpperCase() + field.name.slice(1).replace(/_/g," ")}
-                      ${field.required ? "*" : ""}</label>
-                <input type="${inputType}" name="${inputName}" value="${val}" 
-                       class="form-control" style="font-size:0.9em; padding:4px;" 
+                <label>
+                    ${field.name.charAt(0).toUpperCase() +
+                      field.name.slice(1).replace(/_/g," ")}
+                    ${field.required ? "*" : ""}
+                </label>
+                <input type="${inputType}"
+                       name="${inputName}"
+                       value="${val}"
+                       ${stepAttr}
+                       class="form-control"
+                       style="font-size:0.9em; padding:4px;"
                        ${field.required ? "required" : ""}>
             </div>
         `;
     });
-
-    fieldDiv.classList.add("fields");
 }
 
 // Preload template transactions
@@ -186,7 +249,8 @@ createTransactionRow({{ txn | tojson }});
 {% endfor %}
 
 // Add transaction row
-document.getElementById("add-transaction").addEventListener("click", () => createTransactionRow());
+document.getElementById("add-transaction")
+    .addEventListener("click", () => createTransactionRow());
 
 // Remove transaction row
 document.addEventListener("click", function(e) {
