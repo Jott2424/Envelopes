@@ -81,9 +81,13 @@
 
                         <tr>
                             <td>Running Total</td>
-                            <td>{{ env_data["_totals"]["running_total"] }}</td>
+                            <td style="color: {{ 'green' if env_data['_totals']['running_total'] >= 0 else 'red' }}">
+                                {{ env_data["_totals"]["running_total"] }}
+                            </td>
                             {% for eid, name in sorted_envelopes %}
-                                <td>{{ env_data[eid]['running_total'] }}</td>
+                                <td style="color: {{ 'green' if env_data[eid]['running_total'] >= 0 else 'red' }}">
+                                    {{ env_data[eid]['running_total'] }}
+                                </td>
                             {% endfor %}
                         </tr>
 
