@@ -254,3 +254,69 @@ body {
     flex-wrap: wrap;
     margin-bottom: 20px;
 }
+
+/********** LEDGER LAYOUT ENHANCEMENTS **********/
+
+/* Make ledger card wider than normal cards */
+.ledger-card {
+    max-width: 95vw;          /* nearly full screen */
+    overflow: hidden;         /* prevent page overflow */
+}
+
+/* Horizontal scroll container for wide tables */
+.table-scroll {
+    overflow-x: auto;
+    margin-bottom: 24px;
+    padding-bottom: 8px;
+}
+
+/* Ensure table doesn’t collapse columns */
+.ledger-table {
+    min-width: max-content;
+    white-space: nowrap;
+}
+
+/* Improve readability for many columns */
+.ledger-table th,
+.ledger-table td {
+    text-align: right;
+}
+
+/* Keep first column readable */
+.ledger-table th:first-child,
+.ledger-table td:first-child {
+    text-align: left;
+    font-weight: 600;
+    position: sticky;
+    left: 0;
+    background: white;
+    z-index: 2;
+}
+
+/* Keep second column (Total) visible */
+.ledger-table th:nth-child(2),
+.ledger-table td:nth-child(2) {
+    position: sticky;
+    left: 120px;
+    background: white;
+    z-index: 2;
+    font-weight: 600;
+}
+
+/* Header stays on top */
+.ledger-table thead th {
+    position: sticky;
+    top: 0;
+    z-index: 3;
+}
+
+.week-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    text-align: left;
+}
+
+.week-header .btn {
+    margin-left: 16px;
+}

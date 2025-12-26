@@ -14,7 +14,7 @@
         {{ nav.logout() }}
     </div>
 
-    <div class="card">
+    <div class="card ledger-card">
         <h1>Ledger Overview</h1>
 
         <!-- Filters -->
@@ -42,50 +42,54 @@
         <!-- Ledger tables -->
         {% for week, env_data in ledger.items() %}
             {% set sorted_envelopes = envelopes.items()|sort(attribute=1) %}
+            {% set week_start, week_end = week.split(' - ') %}
 
-            <h3>{{ week }}</h3>
+            <!-- ✅ RESTORED VIEW BUTTON USING MACRO -->
+            <div class="week-header">
+                <h3>{{ week }}</h3>
+                {{ nav.ledger_receipts_view(budget_id, week_start, week_end) }}
+            </div>
 
-            <table class="styled-table">
-                <thead>
-                    <tr>
-                        <th>Type</th>
-                        <th>Total</th>
-                        {% for eid, name in sorted_envelopes %}
-                            <th>{{ name }}</th>
-                        {% endfor %}
-                    </tr>
-                </thead>
-                <tbody>
+            <div class="table-scroll">
+                <table class="styled-table ledger-table">
+                    <thead>
+                        <tr>
+                            <th>Type</th>
+                            <th>Total</th>
+                            {% for eid, name in sorted_envelopes %}
+                                <th>{{ name }}</th>
+                            {% endfor %}
+                        </tr>
+                    </thead>
+                    <tbody>
 
-                    {# Deposits Row #}
-                    <tr>
-                        <td>Deposits</td>
-                        <td>{{ env_data["_totals"]["credit"] }}</td>
-                        {% for eid, name in sorted_envelopes %}
-                            <td>{{ env_data[eid]['credit'] }}</td>
-                        {% endfor %}
-                    </tr>
+                        <tr>
+                            <td>Deposits</td>
+                            <td>{{ env_data["_totals"]["credit"] }}</td>
+                            {% for eid, name in sorted_envelopes %}
+                                <td>{{ env_data[eid]['credit'] }}</td>
+                            {% endfor %}
+                        </tr>
 
-                    {# Withdrawals Row #}
-                    <tr>
-                        <td>Withdrawals</td>
-                        <td>{{ env_data["_totals"]["debit"] }}</td>
-                        {% for eid, name in sorted_envelopes %}
-                            <td>{{ env_data[eid]['debit'] }}</td>
-                        {% endfor %}
-                    </tr>
+                        <tr>
+                            <td>Withdrawals</td>
+                            <td>{{ env_data["_totals"]["debit"] }}</td>
+                            {% for eid, name in sorted_envelopes %}
+                                <td>{{ env_data[eid]['debit'] }}</td>
+                            {% endfor %}
+                        </tr>
 
-                    {# Running Total Row #}
-                    <tr>
-                        <td>Running Total</td>
-                        <td>{{ env_data["_totals"]["running_total"] }}</td>
-                        {% for eid, name in sorted_envelopes %}
-                            <td>{{ env_data[eid]['running_total'] }}</td>
-                        {% endfor %}
-                    </tr>
+                        <tr>
+                            <td>Running Total</td>
+                            <td>{{ env_data["_totals"]["running_total"] }}</td>
+                            {% for eid, name in sorted_envelopes %}
+                                <td>{{ env_data[eid]['running_total'] }}</td>
+                            {% endfor %}
+                        </tr>
 
-                </tbody>
-            </table>
+                    </tbody>
+                </table>
+            </div>
         {% endfor %}
     </div>
 </div>
