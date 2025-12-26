@@ -103,7 +103,7 @@ def receipts_create(budget_id):
             flash("Receipt template saved successfully!", "success")
             cur.close()
             conn.close()
-            return redirect(url_for("receipt_templates_view_route", budget_id=budget_id))
+            return redirect(url_for("receipts_home_route", budget_id=budget_id))
 
         else:
             # Calculate total amount
@@ -139,7 +139,7 @@ def receipts_create(budget_id):
             flash("Receipt created successfully!", "success")
             cur.close()
             conn.close()
-            return redirect(url_for("receipts_view_route", budget_id=budget_id))
+            return redirect(url_for("receipts_home_route", budget_id=budget_id))
 
     cur.close()
     conn.close()
@@ -385,9 +385,7 @@ def receipt_templates_edit(budget_id, template_id):
 
         cur.close()
         conn.close()
-        return redirect(
-            url_for("receipt_templates_view_route", budget_id=budget_id)
-        )
+        return redirect(url_for("receipts_home_route", budget_id=budget_id))
 
     # ============================
     # GET
@@ -547,7 +545,7 @@ def receipts_edit(budget_id, receipt_id):
 
         conn.commit()
         flash("Receipt updated.", "success")
-        return redirect(url_for("receipts_view_route", budget_id=budget_id, receipt_id=receipt_id))
+        return redirect(url_for("receipts_home_route", budget_id=budget_id))
 
     return render_template(
         "receipts_edit.html",
