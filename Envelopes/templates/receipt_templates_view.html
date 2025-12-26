@@ -17,13 +17,38 @@
     <div class="card">
         <h1>Receipt Templates</h1>
 
+        <!-- Filters -->
+        <form method="get" id="filters-form" class="filters-form">
+            <div class="filters-row">
+                <div class="form-group">
+                    <label>Payment Source</label>
+                    <select name="payment_source_name" class="form-control select-box" onchange="this.form.submit()">
+                        <option value="">--All--</option>
+                        {% for ps_id, ps_name in payment_sources %}
+                            <option value="{{ ps_name }}" {% if ps_name == payment_source_name %}selected{% endif %}>{{ ps_name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Type</label>
+                    <select name="debit_or_credit" class="form-control select-box" onchange="this.form.submit()">
+                        <option value="">--All--</option>
+                        <option value="debit" {% if debit_or_credit == 'debit' %}selected{% endif %}>Debit</option>
+                        <option value="credit" {% if debit_or_credit == 'credit' %}selected{% endif %}>Credit</option>
+                    </select>
+                </div>
+            </div>
+        </form>
+
+        <!-- Templates table -->
         {% if templates %}
             <table class="styled-table">
                 <thead>
                     <tr>
                         <th>Description</th>
-                        <th>Payment Source</th>
+                        <th>Merchant</th>
                         <th>Type</th>
+                        <th>Payment Source</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
@@ -31,11 +56,10 @@
                     {% for t in templates %}
                         <tr>
                             <td>{{ t.description }}</td>
-                            <td>{{ t.payment_source_name }}</td>
+                            <td>{{ t.merchant }}</td>
                             <td>{{ t.debit_or_credit }}</td>
-                            <td>
-                                {{ nav.receipt_templates_edit(budget_id, t.pk_receipt_templates_id) }}
-                            </td>
+                            <td>{{ t.payment_source_name }}</td>
+                            <td>{{ nav.receipt_templates_edit(budget_id, t.pk_receipt_templates_id) }}</td>
                         </tr>
                     {% endfor %}
                 </tbody>

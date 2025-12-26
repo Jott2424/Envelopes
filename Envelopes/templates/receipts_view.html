@@ -37,6 +37,14 @@
                         {% endfor %}
                     </select>
                 </div>
+                <div class="form-group">
+                    <label>Type</label>
+                    <select name="debit_or_credit" class="form-control select-box" onchange="this.form.submit()">
+                        <option value="">--All--</option>
+                        <option value="debit" {% if debit_or_credit == 'debit' %}selected{% endif %}>Debit</option>
+                        <option value="credit" {% if debit_or_credit == 'credit' %}selected{% endif %}>Credit</option>
+                    </select>
+                </div>
             </div>
         </form>
 
@@ -45,10 +53,10 @@
             <table class="styled-table">
                 <thead>
                     <tr>
-                        <th>Description</th>
-                        <th>Payment Source</th>
+                        <th>Date</th>
+                        <th>Merchant</th>
                         <th>Type</th>
-                        <th>Transaction Date</th>
+                        <th>Payment Source</th>
                         <th>Amount</th>
                         <th>Actions</th>
                     </tr>
@@ -56,10 +64,10 @@
                 <tbody>
                     {% for t in receipts %}
                         <tr>
-                            <td>{{ t.description }}</td>
-                            <td>{{ t.payment_source_name }}</td>
-                            <td>{{ t.debit_or_credit }}</td>
                             <td>{{ t.transaction_date.strftime("%Y-%m-%d") if t.transaction_date else "" }}</td>
+                            <td>{{ t.merchant }}</td>
+                            <td>{{ t.debit_or_credit }}</td>
+                            <td>{{ t.payment_source_name }}</td>
                             <td>${{ "{:,.2f}".format(t.amount) }}</td>
                             <td>{{ nav.receipts_edit(budget_id, t.pk_receipts_id) }}</td>
                         </tr>
