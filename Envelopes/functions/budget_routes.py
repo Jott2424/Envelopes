@@ -274,12 +274,13 @@ def ledger_settings(budget_id):
     if request.method=="POST":
         selected_ids = request.form.getlist("envelopes")
         details = {"envelope_ids": [int(e) for e in selected_ids]}
+
+        cur.execute("""DELETE FROM user_settings WHERE setting = 'default_ledger_envelopes' and fk_users_id = %s""",(current_user.id,))
+
         # Upsert
         cur.execute("""
             INSERT INTO user_settings(fk_users_id, setting, details)
             VALUES(%s, 'default_ledger_envelopes', %s)
-            ON CONFLICT (fk_users_id, setting)
-            DO UPDATE SET details=EXCLUDED.details
         """, (current_user.id, json.dumps(details)))
         conn.commit()
         return redirect(url_for("ledger_overview_route", budget_id=budget_id))
