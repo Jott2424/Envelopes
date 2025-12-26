@@ -162,14 +162,10 @@ def ledger_overview(budget_id):
     last_of_month = date(year, month, monthrange(year, month)[1])
 
     # Align to Sunday–Saturday
-    first_week_start = first_of_month - timedelta(
-        days=(first_of_month.weekday() + 1) % 7
-    )
-    last_week_end = last_of_month + timedelta(
-        days=(6 - ((last_of_month.weekday() + 1) % 7))
-    )
+    first_week_start = first_of_month - timedelta(days=(first_of_month.weekday() + 1) % 7)
+    last_week_end = last_of_month + timedelta(days=(6 - ((last_of_month.weekday() + 1) % 7)))
 
-    # --- Get selected envelopes ---
+    # --- Selected envelopes ---
     cur.execute("""
         SELECT details
         FROM user_settings
@@ -177,66 +173,78 @@ def ledger_overview(budget_id):
     """, (current_user.id,))
     row = cur.fetchone()
 
-    selected_envelopes = []
     if row and row[0] and "envelope_ids" in row[0]:
         selected_envelopes = [int(e) for e in row[0]["envelope_ids"]]
-
-    if not selected_envelopes:
+    else:
         cur.execute(queries.GET_ENVELOPES_BY_BUDGET_ID, (budget_id,))
         selected_envelopes = [r[0] for r in cur.fetchall()]
 
     # --- Historical balances BEFORE visible weeks ---
-    cur.execute(
-        queries.GET_LEDGER_BALANCES_BEFORE_DATE,
-        (budget_id, first_week_start)
-    )
-    rows = cur.fetchall()
-
+    cur.execute(queries.GET_LEDGER_BALANCES_BEFORE_DATE, (budget_id, first_week_start))
     running_totals = {eid: 0 for eid in selected_envelopes}
-    for envelope_id, balance in rows:
+    for envelope_id, balance in cur.fetchall():
         if envelope_id in running_totals:
             running_totals[envelope_id] = balance or 0
 
     # --- Weekly sums ---
-    cur.execute(
-        queries.GET_LEDGER_WEEKLY_SUMS,
-        (budget_id, first_week_start, last_week_end)
-    )
-    transactions = cur.fetchall()
+    cur.execute(queries.GET_LEDGER_WEEKLY_SUMS, (budget_id, first_week_start, last_week_end))
+    rows = cur.fetchall()
 
-    def majority_month(week_label):
-        start_str, _ = week_label.split(' - ')
-        start = date.fromisoformat(start_str)
-        days = [start + timedelta(days=i) for i in range(7)]
-        return max(
-            set(d.month for d in days),
-            key=lambda m: sum(1 for d in days if d.month == m)
-        )
-
-    ledger = {}
-
-    for week_label, envelope_id, debit, credit in transactions:
-        if majority_month(week_label) != month:
-            continue
-        if envelope_id not in selected_envelopes:
-            continue
-
-        if week_label not in ledger:
-            ledger[week_label] = {}
-
-        running_totals[envelope_id] += (credit or 0) - (debit or 0)
-
-        ledger[week_label][envelope_id] = {
+    # Organize transactions by week
+    weekly_data = {}
+    for week_start, week_label, eid, debit, credit in rows:
+        weekly_data.setdefault(week_start, {})
+        weekly_data[week_start][eid] = {
             "debit": debit or 0,
-            "credit": credit or 0,
-            "running_total": running_totals[envelope_id]
+            "credit": credit or 0
         }
 
+    # --- Build ledger week-by-week ---
+    ledger = {}
+    week = first_week_start
+    overall_running_total = sum(running_totals.values())
+
+    while week <= last_week_end:
+        week_label = f"{week} - {week + timedelta(days=6)}"
+
+        # Skip weeks whose majority is not the selected month
+        days = [week + timedelta(days=i) for i in range(7)]
+        if max(set(d.month for d in days), key=lambda m: sum(d.month == m for d in days)) != month:
+            week += timedelta(days=7)
+            continue
+
+        ledger[week_label] = {}
+        week_total_credit = 0
+        week_total_debit = 0
+        week_total_running = 0
+
+        for eid in selected_envelopes:
+            debit = weekly_data.get(week, {}).get(eid, {}).get("debit", 0)
+            credit = weekly_data.get(week, {}).get(eid, {}).get("credit", 0)
+
+            running_totals[eid] += credit - debit
+
+            ledger[week_label][eid] = {
+                "debit": debit,
+                "credit": credit,
+                "running_total": running_totals[eid]
+            }
+
+            week_total_credit += credit
+            week_total_debit += debit
+            week_total_running += running_totals[eid]
+
+        # Store totals for the table
+        ledger[week_label]["_totals"] = {
+            "credit": week_total_credit,
+            "debit": week_total_debit,
+            "running_total": week_total_running
+        }
+
+        week += timedelta(days=7)
+
     # --- Envelope names ---
-    cur.execute(
-        queries.GET_ENVELOPE_NAMES_BY_ID,
-        (selected_envelopes,)
-    )
+    cur.execute(queries.GET_ENVELOPE_NAMES_BY_ID, (selected_envelopes,))
     envelopes = {eid: name for eid, name in cur.fetchall()}
 
     cur.close()
@@ -251,8 +259,6 @@ def ledger_overview(budget_id):
         month=month,
         current_year=today.year
     )
-
-
 
 
 def ledger_settings(budget_id):

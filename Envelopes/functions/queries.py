@@ -81,22 +81,24 @@ WITH all_receipts AS (
     JOIN transactions t ON t.fk_receipts_id = r.pk_receipts_id
     WHERE r.fk_budgets_id = %s
       AND r.transaction_date BETWEEN %s AND %s
+),
+weekly AS (
+    SELECT
+        date_trunc('week', transaction_date + interval '1 day') - interval '1 day' AS week_start,
+        fk_envelopes_id,
+        SUM(CASE WHEN debit_or_credit = 'debit' THEN amount ELSE 0 END) AS debit,
+        SUM(CASE WHEN debit_or_credit = 'credit' THEN amount ELSE 0 END) AS credit
+    FROM all_receipts
+    GROUP BY 1, 2
 )
 SELECT
-    to_char(
-        date_trunc('week', transaction_date + interval '1 day') - interval '1 day',
-        'YYYY-MM-DD'
-    ) || ' - ' ||
-    to_char(
-        date_trunc('week', transaction_date + interval '1 day') - interval '1 day' + interval '6 days',
-        'YYYY-MM-DD'
-    ) AS week_label,
+    week_start::date,
+    (week_start::date || ' - ' || (week_start + interval '6 days')::date) AS week_label,
     fk_envelopes_id,
-    SUM(CASE WHEN debit_or_credit = 'debit' THEN amount ELSE 0 END) AS debit,
-    SUM(CASE WHEN debit_or_credit = 'credit' THEN amount ELSE 0 END) AS credit
-FROM all_receipts
-GROUP BY 1, 2
-ORDER BY 1 ASC;
+    debit,
+    credit
+FROM weekly
+ORDER BY week_start ASC, fk_envelopes_id ASC;
 """
 
 GET_LEDGER_BALANCES_BEFORE_DATE = """
