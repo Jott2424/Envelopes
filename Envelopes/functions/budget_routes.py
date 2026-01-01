@@ -157,13 +157,15 @@ def ledger_overview(budget_id):
     year = int(request.args.get('year', today.year))
     month = int(request.args.get('month', today.month))
 
-    # --- Month boundaries ---
+    # --- Month boundaries (for majority-of-days calculation only) ---
     first_of_month = date(year, month, 1)
     last_of_month = date(year, month, monthrange(year, month)[1])
 
-    # Align to Sunday–Saturday
-    first_week_start = first_of_month - timedelta(days=(first_of_month.weekday() + 1) % 7)
-    last_week_end = last_of_month + timedelta(days=(6 - ((last_of_month.weekday() + 1) % 7)))
+    # --- Full week range covering all weeks that touch the month ---
+    first_week_start = (first_of_month - timedelta(days=(first_of_month.weekday() + 1) % 7)
+                    + timedelta(days=7 if sum(1 for i in range(7) 
+                                               if (first_of_month - timedelta(days=(first_of_month.weekday() + 1) % 7) + timedelta(days=i)).month == first_of_month.month) < 4 else 0))
+    last_week_end = last_of_month + timedelta(days=(6 - ((last_of_month.weekday() + 1) % 7)))  # Saturday
 
     # --- Selected envelopes ---
     cur.execute("""
@@ -179,14 +181,18 @@ def ledger_overview(budget_id):
         cur.execute(queries.GET_ENVELOPES_BY_BUDGET_ID, (budget_id,))
         selected_envelopes = [r[0] for r in cur.fetchall()]
 
-    # --- Historical balances BEFORE visible weeks ---
-    cur.execute(queries.GET_LEDGER_BALANCES_BEFORE_DATE, (budget_id, first_week_start))
+    # --- Seed running totals with all transactions before the first week ---
+    cutoff_date = first_week_start  # Include everything before the first Sunday
+    print(cutoff_date)
+    cur.execute(queries.GET_LEDGER_BALANCES_BEFORE_DATE, (budget_id, cutoff_date))
     running_totals = {eid: 0 for eid in selected_envelopes}
     for envelope_id, balance in cur.fetchall():
         if envelope_id in running_totals:
             running_totals[envelope_id] = balance or 0
 
-    # --- Weekly sums ---
+    # --- Fetch weekly sums for all weeks in range ---
+    print(first_week_start)
+    print(last_week_end)
     cur.execute(queries.GET_LEDGER_WEEKLY_SUMS, (budget_id, first_week_start, last_week_end))
     rows = cur.fetchall()
 
@@ -202,17 +208,20 @@ def ledger_overview(budget_id):
     # --- Build ledger week-by-week ---
     ledger = {}
     week = first_week_start
-    overall_running_total = sum(running_totals.values())
 
     while week <= last_week_end:
-        week_label = f"{week} - {week + timedelta(days=6)}"
-
-        # Skip weeks whose majority is not the selected month
+        # Determine which month owns this week (for display only)
         days = [week + timedelta(days=i) for i in range(7)]
-        if max(set(d.month for d in days), key=lambda m: sum(d.month == m for d in days)) != month:
+        majority_month = max(
+            set(d.month for d in days),
+            key=lambda m: sum(d.month == m for d in days)
+        )
+
+        if majority_month != month:
             week += timedelta(days=7)
             continue
 
+        week_label = f"{week} - {week + timedelta(days=6)}"
         ledger[week_label] = {}
         week_total_credit = 0
         week_total_debit = 0
@@ -222,7 +231,7 @@ def ledger_overview(budget_id):
             debit = weekly_data.get(week, {}).get(eid, {}).get("debit", 0)
             credit = weekly_data.get(week, {}).get(eid, {}).get("credit", 0)
 
-            running_totals[eid] += credit - debit
+            running_totals[eid] += credit - debit  # Running total update
 
             ledger[week_label][eid] = {
                 "debit": debit,
@@ -234,7 +243,6 @@ def ledger_overview(budget_id):
             week_total_debit += debit
             week_total_running += running_totals[eid]
 
-        # Store totals for the table
         ledger[week_label]["_totals"] = {
             "credit": week_total_credit,
             "debit": week_total_debit,
@@ -259,6 +267,7 @@ def ledger_overview(budget_id):
         month=month,
         current_year=today.year
     )
+
 
 
 def ledger_settings(budget_id):

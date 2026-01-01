@@ -69,22 +69,23 @@ DROP_FROM_RECEIPTS_BY_PK = "DELETE FROM receipts WHERE pk_receipts_id = %s"
 DROP_FROM_TRANSACTIONS_BY_FK = "DELETE FROM transactions WHERE fk_receipts_id = %s"
 
 ################ LEDGER
-########## LEDGER
 GET_LEDGER_WEEKLY_SUMS = """
 WITH all_receipts AS (
     SELECT
-        r.transaction_date,
+        r.transaction_date::date AS transaction_date,
         r.debit_or_credit,
         t.fk_envelopes_id,
         (t.details->>'amount')::numeric AS amount
     FROM receipts r
     JOIN transactions t ON t.fk_receipts_id = r.pk_receipts_id
     WHERE r.fk_budgets_id = %s
-      AND r.transaction_date BETWEEN %s AND %s
+      AND r.transaction_date::date >= %s
+      AND r.transaction_date::date <= %s
 ),
 weekly AS (
     SELECT
-        date_trunc('week', transaction_date + interval '1 day') - interval '1 day' AS week_start,
+        -- Week starts on Sunday
+        (transaction_date - extract(dow from transaction_date)::int)::date AS week_start,
         fk_envelopes_id,
         SUM(CASE WHEN debit_or_credit = 'debit' THEN amount ELSE 0 END) AS debit,
         SUM(CASE WHEN debit_or_credit = 'credit' THEN amount ELSE 0 END) AS credit
@@ -92,8 +93,8 @@ weekly AS (
     GROUP BY 1, 2
 )
 SELECT
-    week_start::date,
-    (week_start::date || ' - ' || (week_start + interval '6 days')::date) AS week_label,
+    week_start,
+    (week_start || ' - ' || (week_start + interval '6 days')::date) AS week_label,
     fk_envelopes_id,
     debit,
     credit
@@ -101,6 +102,7 @@ FROM weekly
 ORDER BY week_start ASC, fk_envelopes_id ASC;
 """
 
+# Get balances before a certain date
 GET_LEDGER_BALANCES_BEFORE_DATE = """
 SELECT
     t.fk_envelopes_id,
@@ -116,4 +118,3 @@ WHERE r.fk_budgets_id = %s
   AND r.transaction_date < %s
 GROUP BY t.fk_envelopes_id;
 """
-
